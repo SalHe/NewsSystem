@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="5.0.6" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Whu.BLM.NewsSystem.Client\Whu.BLM.NewsSystem.Client.csproj" />
+    <ProjectReference Include="..\Whu.BLM.NewsSystem.Shared\Whu.BLM.NewsSystem.Shared.csproj" />
+  </ItemGroup>
+
+</Project>
