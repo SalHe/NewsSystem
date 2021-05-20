@@ -1,17 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
-    <UserSecretsId>6868aacf-1eab-4272-9dea-305257468e78</UserSecretsId>
+    <UserSecretsId>f5f7464f-67ad-436a-948b-33fb15605943</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="HtmlAgilityPack" Version="1.11.33" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="3.1.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Whu.BLM.NewsSystem.Shared\Whu.BLM.NewsSystem.Shared.csproj" />
+    <ProjectReference Include="..\Whu.BLM.NewsSystem.Spider\Whu.BLM.NewsSystem.Spider.csproj" />
   </ItemGroup>
 
 </Project>
