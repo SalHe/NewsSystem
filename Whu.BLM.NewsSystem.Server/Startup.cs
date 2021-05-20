@@ -6,11 +6,13 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using Whu.BLM.NewsSystem.Server.Context;
 
 namespace Whu.BLM.NewsSystem.Server
 {
@@ -26,6 +28,12 @@ namespace Whu.BLM.NewsSystem.Server
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddDbContext<NewsSystemContext>(options => options.UseMySql(
+                    Configuration.GetConnectionString("MySqlConnection"),
+                    new MySqlServerVersion("8.0.25")
+                    )
+            );
+
             services.AddRazorPages();
 
             services.AddControllers();

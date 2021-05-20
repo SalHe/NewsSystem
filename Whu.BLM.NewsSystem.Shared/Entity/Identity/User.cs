@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Whu.BLM.NewsSystem.Shared.Entity.Content;
 
 namespace Whu.BLM.NewsSystem.Shared.Entity.Identity
 {
@@ -29,6 +30,22 @@ namespace Whu.BLM.NewsSystem.Shared.Entity.Identity
         /// 用户组别。
         /// </summary>
         public UserGroup UserGroup { get; set; }
+
+        /// <summary>
+        /// 浏览过的新闻。
+        /// </summary>
+        public IList<News> VisitedNews { get; set; }
+
+        /// <summary>
+        /// 喜欢/收藏的新闻。
+        /// </summary>
+        public IList<News> LikedNews { get; set; }
+
+        /// <summary>
+        /// 不喜欢的新闻。
+        /// </summary>
+        public IList<News> DislikedNews { get; set; }
+
     }
 
     public enum UserGroup

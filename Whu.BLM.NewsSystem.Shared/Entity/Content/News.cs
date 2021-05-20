@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Whu.BLM.NewsSystem.Shared.Entity.Identity;
 
 namespace Whu.BLM.NewsSystem.Shared.Entity.Content
 {
@@ -32,6 +33,10 @@ namespace Whu.BLM.NewsSystem.Shared.Entity.Content
         /// <summary>
         /// 类别。
         /// </summary>
-        public NewsCategory Category { get; set; }
+        public NewsCategory NewsCategory { get; set; }
+
+        public IList<User> LikedBy { get; set; }
+        public IList<User> DislikedBy { get; set; }
+        public IList<User> VisitedBy { get; set; }
     }
 }
