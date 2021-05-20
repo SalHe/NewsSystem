@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NLog.Web;
-using Whu.BLM.NewsSystem.Server.Context;
+using Whu.BLM.NewsSystem.Server.Data.Context;
 
 namespace Whu.BLM.NewsSystem.Server
 {

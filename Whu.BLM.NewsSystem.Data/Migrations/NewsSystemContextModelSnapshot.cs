@@ -2,17 +2,15 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Whu.BLM.NewsSystem.Server.Context;
+using Whu.BLM.NewsSystem.Server.Data.Context;
 
-namespace Whu.BLM.NewsSystem.Server.Migrations
+namespace Whu.BLM.NewsSystem.Data.Migrations
 {
     [DbContext(typeof(NewsSystemContext))]
-    [Migration("20210520140546_Init")]
-    partial class Init
+    partial class NewsSystemContextModelSnapshot : ModelSnapshot
     {
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Whu.BLM.NewsSystem.Shared.Entity.Content;
 using Whu.BLM.NewsSystem.Shared.Entity.Identity;
 
-namespace Whu.BLM.NewsSystem.Server.Context
+namespace Whu.BLM.NewsSystem.Server.Data.Context
 {
     public class NewsSystemContext : DbContext
     {

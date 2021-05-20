@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Whu.BLM.NewsSystem.Server.Migrations
+namespace Whu.BLM.NewsSystem.Data.Migrations
 {
     public partial class Init : Migration
     {
