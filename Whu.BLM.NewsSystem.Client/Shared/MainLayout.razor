@@ -15,7 +15,7 @@
         </div>
     </div>*@
 
-<div>
+<div class="app-container">
     <!-- 顶部导航栏 -->
     <Header>
         <Row Gutter="16">
@@ -57,7 +57,7 @@
     </Header>
 
     <!-- 主内容区 -->
-    <Content Style="padding: 20px;">
+    <Content>
         <Row Justify="space-around">
             <AntDesign.Col Span="20">
                 @Body
@@ -77,14 +77,31 @@
 </div>
 
 <style>
+    /* TODO: 让导航栏保持出现 */
     .ant-layout-header {
         background: white;
         box-shadow: 0 2px 8px #f0f1f2;
+        /*position: fixed;
+        z-index: 1;
+        width: 100%;*/
     }
 
     .ant-layout-footer {
         display: flex;
         justify-content: center;
+    }
+
+    .app-container {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+
+    .ant-layout-content {
+        padding: 20px;
+        flex-grow: 1;
+        /*padding: 0 50px;
+        margin-top: 64px;*/
     }
 </style>
 
