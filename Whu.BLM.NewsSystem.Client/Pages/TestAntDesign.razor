@@ -1,0 +1,13 @@
+﻿@page "/test-ant-design"
+@inject MessageService _message
+
+<Button Type="primary" @onclick="ButtonClicked">Hello World!</Button>
+
+@code {
+
+    private void ButtonClicked()
+    {
+        _message.Info("You clicked me!");
+    }
+
+}

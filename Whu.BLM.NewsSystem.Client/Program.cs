@@ -19,6 +19,9 @@ namespace Whu.BLM.NewsSystem.Client
 
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
+            // Add support for Ant Design
+            builder.Services.AddAntDesign();
+
             await builder.Build().RunAsync();
         }
     }
