@@ -1,8 +1,76 @@
-﻿@page "/register" 
+﻿@page "/register"
+@using System.ComponentModel.DataAnnotations
+@inject MessageService _message
 
+<div style="display: flex; justify-content: center">
+    <div style="display: flex; flex-direction: column; justify-content: center; width: 450px; align-items: center;">
+        <Avatar Src="favicon.ico" Style="margin-bottom: 10px;" />
+        <AntDesign.Title>注册</AntDesign.Title>
+        <Form Model="@Model"
+              LabelColSpan="4"
+              OnFinish="OnRegister"
+              WrapperColSpan="20">
+            <FormItem Label="用户名">
+                <AntDesign.Input @bind-Value="@context.Username" Placeholder="请输入用户名" />
+            </FormItem>
+            <FormItem Label="邮箱">
+                <AntDesign.Input @bind-Value="@context.Email" Placeholder="请输入用户名" />
+            </FormItem>
+            <FormItem Label="密码">
+                <InputPassword @bind-Value="@context.Password" Placeholder="请输入密码" />
+            </FormItem>
+            <FormItem Label="确认密码">
+                <InputPassword @bind-Value="@context.PasswordAgain" Placeholder="请输入密码" />
+            </FormItem>
+            <FormItem WrapperColOffset="4" WrapperColSpan="20">
+                <Button Type="@ButtonType.Primary" HtmlType="submit" Block>登录</Button>
+            </FormItem>
+            <FormItem WrapperColOffset="4" WrapperColSpan="20">
+                <a href="/login">
+                    <Button Type="@ButtonType.Link" Block>已有账号？登录</Button>
+                </a>
+            </FormItem>
+            <!-- TODO 对接注册 -->
+        </Form>
+    </div>
+</div>
 
-<h3>Register</h3>
+<style>
+    /* 让表单可以适配总宽度 */
+    .ant-spin-nested-loading {
+        width: 100%;
+    }
+</style>
 
 @code {
+
+    public class LoginModel
+    {
+        [Required(ErrorMessage = "请输入您的用户名")]
+        [MinLength(5, ErrorMessage = "用户名不得少于5位字符")]
+        [MaxLength(16, ErrorMessage = "用户名不得超过16位字符")]
+        public string Username { get; set; }
+
+        [Required(ErrorMessage = "请输入您的邮箱")]
+        [EmailAddress(ErrorMessage = "邮箱格式有误")]
+        public string Email { get; set; }
+
+        [Required(ErrorMessage = "请输入您的密码")]
+        [MinLength(5, ErrorMessage = "密码不得少于5位字符")]
+        [MaxLength(16, ErrorMessage = "密码不得超过16位字符")]
+        public string Password { get; set; }
+
+        [Required(ErrorMessage = "请再次输入您的密码")]
+        [Compare(nameof(Password), ErrorMessage = "两次输入的密码不匹配")]
+        public string PasswordAgain { get; set; }
+    }
+
+    public LoginModel Model { get; set; } = new LoginModel();
+
+    public async Task OnRegister(EditContext editContext)
+    {
+        _message.Info($"{Model.Username} {Model.Password}");
+    }
+
 
 }
