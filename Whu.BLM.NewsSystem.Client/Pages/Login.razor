@@ -1,7 +1,58 @@
-﻿@page "/login" 
+﻿@page "/login"
+@using System.ComponentModel.DataAnnotations
+@inject MessageService _message
 
-<h3>Login</h3>
+<div style="display: flex; justify-content: center">
+    <div style="display: flex; flex-direction: column; justify-content: center; width: 400px; align-items: center;">
+        <Avatar Src="favicon.ico" Style="margin-bottom: 10px;" />
+        <AntDesign.Title>登录</AntDesign.Title>
+        <Form Model="@Model"
+              LabelColSpan="4"
+              OnFinish="OnLogin"
+              WrapperColSpan="20">
+            <FormItem Label="用户名">
+                <AntDesign.Input @bind-Value="@context.Username" Placeholder="请输入用户名" />
+            </FormItem>
+            <FormItem Label="密码">
+                <InputPassword @bind-Value="@context.Password" Placeholder="请输入密码" />
+            </FormItem>
+            <FormItem WrapperColOffset="4" WrapperColSpan="20">
+                <Button Type="@ButtonType.Primary" HtmlType="submit" Block>登录</Button>
+            </FormItem>
+            <FormItem WrapperColOffset="4" WrapperColSpan="20">
+                <a href="/register">
+                    <Button Type="@ButtonType.Link" Block>没有帐号？注册</Button>
+                </a>
+            </FormItem>
+            <!-- TODO 找回密码 -->
+            <!-- TODO 对接登录 -->
+        </Form>
+    </div>
+</div>
+
+<style>
+    /* 让表单可以适配总宽度 */
+    .ant-spin-nested-loading {
+        width: 100%;
+    }
+</style>
 
 @code {
+
+    public class LoginModel
+    {
+        [Required]
+        public string Username { get; set; }
+        [Required]
+        public string Password { get; set; }
+    }
+
+    public LoginModel Model { get; set; } = new LoginModel();
+
+    public async Task OnLogin(EditContext editContext)
+    {
+        _message.Info($"{Model.Username} {Model.Password}");
+    }
+
 
 }
