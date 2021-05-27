@@ -1,7 +1,98 @@
 ﻿@page "/"
+@page "/category/{categoryId:int}"
+@using Whu.BLM.NewsSystem.Shared.Entity.Content;
 
-<h1>Hello, world!</h1>
 
-Welcome to your new app.
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+<Row Align="center">
+    <Menu Mode=MenuMode.Horizontal>
+        <MenuItem>
+            <MenuLink Href="/">推荐</MenuLink>
+        </MenuItem>
+        @for (int i = 0; i < NewsCategories.Count; i++)
+        {
+            var newsCategory = NewsCategories[i];
+            <MenuItem>
+                <MenuLink Href=@($"/category/{newsCategory.Id}")>@newsCategory.Name</MenuLink>
+            </MenuItem>
+        }
+    </Menu>
+</Row>
+
+<Row Align="center" Gutter="(10,30)" Style="margin-top: 20px;">
+    @foreach (var news in News)
+    {
+        <AntDesign.Col Span="6">
+            <Card Hoverable=true Title=@(news.Title)>
+                <Extra>
+                    @news.NewsCategory.Name
+                    <a href=@(news.OringinUrl) target="_blank">打开</a>
+                </Extra>
+                <Body>
+                    <p>@news.AbstractContent</p>
+                </Body>
+            </Card>
+        </AntDesign.Col>
+    }
+</Row>
+
+@code {
+
+    [Parameter]
+    public int? CategoryId { get; set; }
+
+    private IList<NewsCategory> NewsCategories = new List<NewsCategory>();
+    private IList<News> News = new List<News>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        //NewsCategories = await Http.GetFromJsonAsync<IList<NewsCategory>>("news_categories");
+        var categories = new[] { "军事", "政治", "娱乐", "经济", "国际" };
+        int i = 0;
+        foreach (var categoryName in categories)
+        {
+            NewsCategories.Add(new NewsCategory
+            {
+                Id = i,
+                Name = categoryName,
+                News = new List<News>()
+            });
+            i++;
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        News.Clear();
+        if (CategoryId == null)
+        {
+            Random random = new Random();
+            for (int i = 0; i < 100; i++)
+            {
+                News.Add(new News
+                {
+                    Id = i,
+                    Title = $"News {i}",
+                    NewsCategory = NewsCategories[random.Next(0, NewsCategories.Count)],
+                    OringinUrl = $"https://www.baidu.com/s?wd=news{i}",
+                    AbstractContent = $"Content{i}"
+                });
+            }
+        }
+        else
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                News.Add(new News
+                {
+                    Id = i,
+                    Title = $"News {i}",
+                    NewsCategory = NewsCategories[CategoryId ?? 0],
+                    OringinUrl = $"https://www.baidu.com/s?wd=news{i}",
+                    AbstractContent = $"Content{i}"
+                });
+            }
+        }
+    }
+
+}

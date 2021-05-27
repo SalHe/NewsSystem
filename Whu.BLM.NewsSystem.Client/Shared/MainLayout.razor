@@ -1,17 +1,112 @@
 ﻿@inherits LayoutComponentBase
-
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
-
-    <div class="main">
-        <div class="top-row px-4">
-            <a href="http://blazor.net" target="_blank" class="ml-md-auto">About</a>
+@*<div class="page">
+        <div class="sidebar">
+            <NavMenu />
         </div>
 
-        <div class="content px-4">
-            @Body
+        <div class="main">
+            <div class="top-row px-4">
+                <a href="http://blazor.net" target="_blank" class="ml-md-auto">About</a>
+            </div>
+
+            <div class="content px-4">
+                @Body
+            </div>
         </div>
-    </div>
+    </div>*@
+
+<div class="app-container">
+    <!-- 顶部导航栏 -->
+    <Header>
+        <Row Gutter="16">
+            <AntDesign.Col Span="4">
+                <a href="/">
+                    <Avatar Src="favicon.ico" Style="display: inline-block; margin-right: 10px;" />
+                    <Text>BLM News</Text>
+                </a>
+            </AntDesign.Col>
+            <AntDesign.Col Span="14">
+                <AntDesign.Input Placeholder="搜索新闻" Size="@InputSize.Large" @bind-Value="QueryText">
+                    <Prefix>
+                        <Icon Type="search" Theme="outline" />
+                    </Prefix>
+                </AntDesign.Input>
+            </AntDesign.Col>
+            <AntDesign.Col Span="6">
+                <Menu Mode=MenuMode.Horizontal>
+                    <MenuItem Key="home">
+                        <MenuLink Href="/">
+                            <Icon Type="home" Theme="outline" />
+                            首页
+                        </MenuLink>
+                    </MenuItem>
+                    <MenuItem Key="Login">
+                        <MenuLink Href="/login">
+                            <Icon Type="login" Theme="outline" />
+                            登录
+                        </MenuLink>
+                    </MenuItem>
+                    <MenuItem Key="register">
+                        <MenuLink Href="/register">
+                            注册
+                        </MenuLink>
+                    </MenuItem>
+                </Menu>
+            </AntDesign.Col>
+        </Row>
+    </Header>
+
+    <!-- 主内容区 -->
+    <Content>
+        <Row Justify="space-around">
+            <AntDesign.Col Span="20">
+                @Body
+            </AntDesign.Col>
+        </Row>
+    </Content>
+    <BackTop />
+
+    <!-- 底部区 -->
+    <Footer>
+        <div>
+            Powered by ASP.NET Core © BLM News
+            <a href="/about">关于我们</a> |
+            <a href="https://docs.microsoft.com/en-us/aspnet/core/?view=aspnetcore-5.0">ASP.NET Core 5.0</a>
+        </div>
+    </Footer>
 </div>
+
+<style>
+    /* TODO: 让导航栏保持出现 */
+    .ant-layout-header {
+        background: white;
+        box-shadow: 0 2px 8px #f0f1f2;
+        /*position: fixed;
+        z-index: 1;
+        width: 100%;*/
+    }
+
+    .ant-layout-footer {
+        display: flex;
+        justify-content: center;
+    }
+
+    .app-container {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+
+    .ant-layout-content {
+        padding: 20px;
+        flex-grow: 1;
+        /*padding: 0 50px;
+        margin-top: 64px;*/
+    }
+</style>
+
+@code{
+
+    public string QueryText { get; set; }
+
+}

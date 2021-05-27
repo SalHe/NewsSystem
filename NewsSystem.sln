@@ -9,11 +9,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Whu.BLM.NewsSystem.Server",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Whu.BLM.NewsSystem.Client", "Whu.BLM.NewsSystem.Client\Whu.BLM.NewsSystem.Client.csproj", "{3FC221BA-ABD6-4AF8-B8CF-F50338444411}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Whu.BLM.NewsSystem.Data", "Whu.BLM.NewsSystem.Data\Whu.BLM.NewsSystem.Data.csproj", "{07AEF717-1E49-47AF-BB11-E908E20C193B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Whu.BLM.NewsSystem.Data", "Whu.BLM.NewsSystem.Data\Whu.BLM.NewsSystem.Data.csproj", "{07AEF717-1E49-47AF-BB11-E908E20C193B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Whu.BLM.NewsSystem.Spider", "Whu.BLM.NewsSystem.Spider\Whu.BLM.NewsSystem.Spider.csproj", "{1D74845B-88F9-4CB1-B9BA-80CD1B4B92E7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Whu.BLM.NewsSystem.Spider", "Whu.BLM.NewsSystem.Spider\Whu.BLM.NewsSystem.Spider.csproj", "{1D74845B-88F9-4CB1-B9BA-80CD1B4B92E7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Whu.BLM.NewsSystem.Spider.Server", "Whu.BLM.NewsSystem.Spider.Server\Whu.BLM.NewsSystem.Spider.Server.csproj", "{0EAB5C78-7801-44A3-B906-3A024C566A95}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Whu.BLM.NewsSystem.Spider.Server", "Whu.BLM.NewsSystem.Spider.Server\Whu.BLM.NewsSystem.Spider.Server.csproj", "{0EAB5C78-7801-44A3-B906-3A024C566A95}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Spider", "Spider", "{55CADDDC-F3A8-4D82-AEE2-DA8A6CCEC1ED}"
 EndProject
