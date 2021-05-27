@@ -41,9 +41,10 @@
 
     public class LoginModel
     {
-        [Required]
+        [Required(ErrorMessage = "请输入您的用户名")]
         public string Username { get; set; }
-        [Required]
+
+        [Required(ErrorMessage = "请输入您的密码")]
         public string Password { get; set; }
     }
 
