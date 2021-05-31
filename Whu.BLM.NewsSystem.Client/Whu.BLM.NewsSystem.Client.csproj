@@ -15,4 +15,10 @@
     <ProjectReference Include="..\Whu.BLM.NewsSystem.Shared\Whu.BLM.NewsSystem.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="wwwroot\appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
