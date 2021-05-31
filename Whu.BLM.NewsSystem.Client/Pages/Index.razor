@@ -2,8 +2,6 @@
 @page "/category/{categoryId:int}"
 @using Whu.BLM.NewsSystem.Shared.Entity.Content;
 
-
-
 <Row Align="center">
     <Menu Mode=MenuMode.Horizontal>
         <MenuItem>
@@ -12,9 +10,9 @@
         @for (int i = 0; i < NewsCategories.Count; i++)
         {
             var newsCategory = NewsCategories[i];
-            <MenuItem>
+            <AntDesign.MenuItem>
                 <MenuLink Href=@($"/category/{newsCategory.Id}")>@newsCategory.Name</MenuLink>
-            </MenuItem>
+            </AntDesign.MenuItem>
         }
     </Menu>
 </Row>
