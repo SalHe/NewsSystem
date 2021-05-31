@@ -12,9 +12,9 @@
         @for (int i = 0; i < NewsCategories.Count; i++)
         {
             var newsCategory = NewsCategories[i];
-            <MenuItem>
+            <AntDesign.MenuItem>
                 <MenuLink Href=@($"/category/{newsCategory.Id}")>@newsCategory.Name</MenuLink>
-            </MenuItem>
+            </AntDesign.MenuItem>
         }
     </Menu>
 </Row>
