@@ -18,6 +18,8 @@ namespace Whu.BLM.NewsSystem.Server
 {
     public class Startup
     {
+        private const string DevelopmentCorsPolicy = "DevelopmentCorsPolicy";
+        
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -31,15 +33,24 @@ namespace Whu.BLM.NewsSystem.Server
             services.AddDbContext<NewsSystemContext>(options => options.UseMySql(
                     Configuration.GetConnectionString("MySqlConnection"),
                     new MySqlServerVersion("8.0.25")
-                    )
+                )
             );
 
-            services.AddRazorPages();
+            // 添加跨域策略
+            services.AddCors(options =>
+            {
+                options.AddPolicy(DevelopmentCorsPolicy, x =>
+                {
+                    x.AllowAnyOrigin();
+                    x.AllowAnyHeader();
+                    x.AllowAnyMethod();
+                });
+            });
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Whu.BLM.NewsSystem.Server", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo {Title = "Whu.BLM.NewsSystem.Server", Version = "v1"});
             });
         }
 
@@ -54,19 +65,16 @@ namespace Whu.BLM.NewsSystem.Server
             }
 
             app.UseHttpsRedirection();
-            app.UseBlazorFrameworkFiles();
-            app.UseStaticFiles();
 
             app.UseRouting();
 
+            // 如果是开发环境则允许跨域
+            if (env.IsDevelopment())
+                app.UseCors(DevelopmentCorsPolicy);
+
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapRazorPages();
-                endpoints.MapControllers();
-                endpoints.MapFallbackToFile("index.html");
-            });
+            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }
     }
 }
