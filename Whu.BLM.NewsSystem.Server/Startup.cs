@@ -34,8 +34,6 @@ namespace Whu.BLM.NewsSystem.Server
                     )
             );
 
-            services.AddRazorPages();
-
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -54,8 +52,6 @@ namespace Whu.BLM.NewsSystem.Server
             }
 
             app.UseHttpsRedirection();
-            app.UseBlazorFrameworkFiles();
-            app.UseStaticFiles();
 
             app.UseRouting();
 
@@ -63,9 +59,7 @@ namespace Whu.BLM.NewsSystem.Server
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapRazorPages();
                 endpoints.MapControllers();
-                endpoints.MapFallbackToFile("index.html");
             });
         }
     }
