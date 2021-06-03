@@ -21,10 +21,11 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         {
             NewsSystemContext = newsSystemContext;
         }
-        [HttpGet]
+
         /// <summary>
         /// 返回用户信息。
         /// </summary>
+        [HttpGet]
         public User getUserInfo(int id)
         {
             try
@@ -36,12 +37,12 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
             {
                 return new User();
             }
-
         }
-        [HttpDelete]
+
         /// <summary>
         /// 删除指定ID的用户。
         /// </summary>
+        [HttpDelete]
         public bool DeleteUser(int id)
         {
             try
@@ -56,10 +57,11 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                 return false;
             }
         }
-        [HttpPut]
+
         /// <summary>
         /// 修改用户信息。
         /// </summary>
+        [HttpPut]
         public bool ChangeUserInfo(int id, string newUserName, string newPassWord)
         {
             if (JudgeLegality(newUserName) == false || JudgeLegality(newPassWord) == false)
@@ -77,11 +79,12 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                 return false;
             }
         }
-        [HttpPost]
+
         /// <summary>
         /// 用户注册。
         /// </summary>
-        public bool UserRegistration(string username,string password)
+        [HttpPost]
+        public bool UserRegistration(string username, string password)
         {
             if (JudgeLegality(username) == false || JudgeLegality(password) == false)
                 return false;
@@ -90,11 +93,12 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                 User newUser = new User();
                 newUser.Username = username;
                 newUser.Password = MD5(password);
-                int newid = new Random((int)DateTime.Now.Ticks).Next(0,65535);
-                while(NewsSystemContext.Users.Where(u => u.Id == newid).ToList().Count > 0)
+                int newid = new Random((int) DateTime.Now.Ticks).Next(0, 65535);
+                while (NewsSystemContext.Users.Where(u => u.Id == newid).ToList().Count > 0)
                 {
-                    newid = new Random((int)DateTime.Now.Ticks).Next(0,65535);
+                    newid = new Random((int) DateTime.Now.Ticks).Next(0, 65535);
                 }
+
                 newUser.Id = newid;
                 NewsSystemContext.Users.Add(newUser);
                 NewsSystemContext.SaveChanges();
@@ -105,18 +109,20 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                 return false;
             }
         }
-        [HttpGet("Login")]
+
         /// <summary>
         /// 用户登录。
         /// </summary>
-        public bool UserLogin(string id,string password)
+        [HttpGet("Login")]
+        public bool UserLogin(string id, string password)
         {
-
+            throw new NotImplementedException();
         }
-        [NonAction]
+
         /// <summary>
         /// 对用户进行MD5加密
         /// </summary>
+        [NonAction]
         public static string MD5(string Text)
         {
             byte[] buffer = System.Text.Encoding.Default.GetBytes(Text);
@@ -133,6 +139,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                     else
                         ret += a.ToString("X");
                 }
+
                 return ret.ToLower();
             }
             catch
@@ -140,19 +147,18 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                 throw;
             }
         }
-        [NonAction]
+
         /// <summary>
         /// 检验字符串合法性
         /// </summary>
+        [NonAction]
         public bool JudgeLegality(string str)
         {
-
-            string pattern = @"^[A-Za-z0-9]+$";  //@意思忽略转义，+匹配前面一次或多次，$匹配结尾
+            string pattern = @"^[A-Za-z0-9]+$"; //@意思忽略转义，+匹配前面一次或多次，$匹配结尾
 
             Match match = Regex.Match(str, pattern);
 
             return match.Success;
-
         }
     }
 }
