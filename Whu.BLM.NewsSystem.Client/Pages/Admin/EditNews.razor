@@ -2,9 +2,11 @@
 @page "/news/edit/{newsId:int}"
 @inject HttpClient _httpClient
 @inject MessageService _message
+@inject INewsCategoryService _newsCategoryService
 @using Whu.BLM.NewsSystem.Shared.Entity.Content
 @using Whu.BLM.NewsSystem.Shared.Entity.Identity
 @using System.ComponentModel.DataAnnotations
+@using Whu.BLM.NewsSystem.Client.Services
 
 <Form Model="@News"
       LabelColSpan="4"
@@ -59,23 +61,9 @@
     private NewsModel News { get; set; } = new NewsModel();
     private IList<NewsCategory> NewsCategories { get; set; } = new List<NewsCategory>();
 
-    protected override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
-    // TODO 获取新闻类别
-        NewsCategories = new List<NewsCategory>();
-        var categories = new[] {"军事", "政治", "娱乐", "经济", "国际"};
-        int i = 0;
-        foreach (var categoryName in categories)
-        {
-            NewsCategories.Add(new NewsCategory
-            {
-                Id = i,
-                Name = categoryName,
-                News = new List<News>()
-            });
-            i++;
-        }
-        return base.OnInitializedAsync();
+        NewsCategories = await _newsCategoryService.GetNewsCategoriesAsync();
     }
 
     protected override Task OnParametersSetAsync()

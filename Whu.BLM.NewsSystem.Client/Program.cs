@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Whu.BLM.NewsSystem.Client.Services;
+using Whu.BLM.NewsSystem.Client.Services.Impl;
 
 namespace Whu.BLM.NewsSystem.Client
 {
@@ -16,12 +18,13 @@ namespace Whu.BLM.NewsSystem.Client
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("#app");
-            
+
             builder.Services.AddScoped(sp =>
             {
                 string baseUr = builder.Configuration.GetSection("NewsServer")["Url"];
                 return new HttpClient {BaseAddress = new Uri(baseUr)};
             });
+            builder.Services.AddScoped<INewsCategoryService, NewsCategoryService>();
 
             // Add support for Ant Design
             builder.Services.AddAntDesign();
