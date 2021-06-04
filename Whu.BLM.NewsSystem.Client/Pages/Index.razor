@@ -1,9 +1,9 @@
 ﻿@page "/"
 @page "/category/{categoryId:int}"
 @inject INewsCategoryService _newsCategoryService
+@inject INewsService _newsService
 @using Whu.BLM.NewsSystem.Shared.Entity.Content;
 @using Whu.BLM.NewsSystem.Client.Services
-
 
 
 <Row Align="center">
@@ -23,7 +23,7 @@
 
 <AntList DataSource="@News" ItemLayout="@ListItemLayout.Vertical">
     <ChildContent>
-        @* TODO 当不是管理员时，不显示 editAction *@
+        <!-- TODO 当不是管理员时，不显示 editAction -->
         <ListItem Actions="@CreateNewsActions(context)">
             <ListItemMeta Description="@context.AbstractContent">
                 <TitleTemplate>
@@ -56,36 +56,14 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        // TODO 加载新闻列表
-        News.Clear();
+    // TODO 按页码加载新闻列表
         if (CategoryId == null)
         {
-            Random random = new Random();
-            for (int i = 0; i < 100; i++)
-            {
-                News.Add(new News
-                {
-                    Id = i,
-                    Title = $"News {i}",
-                    NewsCategory = NewsCategories[random.Next(0, NewsCategories.Count)],
-                    OringinUrl = $"https://www.baidu.com/s?wd=news{i}",
-                    AbstractContent = $"Content{i}"
-                });
-            }
+            News = await _newsService.GetNewsListAsync(1, 10);
         }
         else
         {
-            for (int i = 0; i < 10; i++)
-            {
-                News.Add(new News
-                {
-                    Id = i,
-                    Title = $"News {i}",
-                    NewsCategory = NewsCategories[CategoryId ?? 0],
-                    OringinUrl = $"https://www.baidu.com/s?wd=news{i}",
-                    AbstractContent = $"Content{i}"
-                });
-            }
+            News = await _newsService.GetNewsListAsync(CategoryId ?? 0, 1, 10);
         }
     }
 

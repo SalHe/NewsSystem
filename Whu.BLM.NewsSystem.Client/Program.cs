@@ -25,6 +25,7 @@ namespace Whu.BLM.NewsSystem.Client
                 return new HttpClient {BaseAddress = new Uri(baseUr)};
             });
             builder.Services.AddScoped<INewsCategoryService, NewsCategoryService>();
+            builder.Services.AddScoped<INewsService, NewsService>();
 
             // Add support for Ant Design
             builder.Services.AddAntDesign();
