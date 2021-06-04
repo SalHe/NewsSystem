@@ -50,6 +50,7 @@
     protected override async Task OnInitializedAsync()
     {
     //NewsCategories = await Http.GetFromJsonAsync<IList<NewsCategory>>("news_categories");
+        // TODO 获取新闻类别
         var categories = new[] {"军事", "政治", "娱乐", "经济", "国际"};
         int i = 0;
         foreach (var categoryName in categories)
@@ -66,6 +67,7 @@
 
     protected override async Task OnParametersSetAsync()
     {
+        // TODO 加载新闻列表
         News.Clear();
         if (CategoryId == null)
         {

@@ -16,6 +16,14 @@
     <FormItem Label="URL">
         <Input @bind-Value="@context.OriginUrl"/>
     </FormItem>
+    <FormItem Label="类别：">
+        <Select Mode="default"
+                DataSource="@NewsCategories"
+                LabelName="@nameof(NewsCategory.Name)"
+                ValueName="@nameof(NewsCategory.Id)"
+                @bind-Value="@context.NewsCategory">
+        </Select>
+    </FormItem>
     <FormItem Label="摘要">
         <TextArea @bind-Value="@context.AbstractContent" MinRows="5" MaxRows="10"></TextArea>
     </FormItem>
@@ -42,12 +50,37 @@
         [Required(ErrorMessage = "请输入新闻URL")]
         [Url(ErrorMessage = "请输入一个合法的URL")]
         public string OriginUrl { get; set; }
+
+        [Required(ErrorMessage = "请输入新闻类别")]
+        [Url(ErrorMessage = "请输入一个合法的类别")]
+        public int NewsCategory { get; set; }
     }
 
     private NewsModel News { get; set; } = new NewsModel();
+    private IList<NewsCategory> NewsCategories { get; set; } = new List<NewsCategory>();
+
+    protected override Task OnInitializedAsync()
+    {
+    // TODO 获取新闻类别
+        NewsCategories = new List<NewsCategory>();
+        var categories = new[] {"军事", "政治", "娱乐", "经济", "国际"};
+        int i = 0;
+        foreach (var categoryName in categories)
+        {
+            NewsCategories.Add(new NewsCategory
+            {
+                Id = i,
+                Name = categoryName,
+                News = new List<News>()
+            });
+            i++;
+        }
+        return base.OnInitializedAsync();
+    }
 
     protected override Task OnParametersSetAsync()
     {
+    // TODO 获取新闻信息
     // News = await _httpClient.GetFromJsonAsync<News>("news/{NewsId}");
         if (NewsId == null)
         {
@@ -55,7 +88,8 @@
             {
                 Title = string.Empty,
                 OriginUrl = string.Empty,
-                AbstractContent = string.Empty
+                AbstractContent = string.Empty,
+                NewsCategory = 0
             };
         }
         else
@@ -80,7 +114,8 @@
             {
                 Title = news.Title,
                 OriginUrl = news.OringinUrl,
-                AbstractContent = news.AbstractContent
+                AbstractContent = news.AbstractContent,
+                NewsCategory = news.NewsCategory.Id
             };
         }
         return Task.CompletedTask;
