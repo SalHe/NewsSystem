@@ -42,7 +42,7 @@
 
     private RenderFragment[] CreateNewsActions(News news)
     {
-        RenderFragment editAction = @<a href="/admin/news/@news.Id">编辑</a>;
+        RenderFragment editAction = @<a href="/news/edit/@news.Id">编辑</a>;
         RenderFragment deleteAction = @<Button Type="@ButtonType.Link" Danger>删除</Button>;
         return new[] {editAction, deleteAction};
     }
