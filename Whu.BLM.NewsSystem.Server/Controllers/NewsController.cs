@@ -42,9 +42,9 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         }
 
         /// <summary>
-        /// 返回指定页码的新闻列表。
+        /// 返回特定搜索字段的含页码的新闻列表。
         /// </summary>
-        [HttpGet]
+        [HttpGet("Bysearchword")]
         public List<NewsWithPage> ListOfNewsWithPages(string searchWord)
         {
             List<NewsWithPage> list = new List<NewsWithPage>();
@@ -53,6 +53,37 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                 for (int i = 1; i <= 10; i++)
                 {
                     List<News> singleList = Search(searchWord, i);
+                    foreach (var news in singleList)
+                    {
+                        NewsWithPage newsWithPage = new NewsWithPage();
+                        newsWithPage.news = news;
+                        newsWithPage.page = i;
+                        list.Add(newsWithPage);
+                    }
+                }
+                return list;
+            }
+            catch
+            {
+                return list;
+            }
+
+        }
+
+        /// <summary>
+        /// 返回指定类别的含页码的新闻列表。
+        /// </summary>
+        [HttpGet("Bycategory")]
+        public List<NewsWithPage> ListOfNewsWithPages(int idOfCategory)
+        {
+            List<NewsWithPage> list = new List<NewsWithPage>();
+            try
+            {
+                for (int i = 1; i <= 10; i++)
+                {
+                    List<News> singleList = NewsSystemContext.News.Where(news => news.NewsCategory.Id == idOfCategory)
+                .Skip(10 * i)
+                .Take(10).ToList();
                     foreach (var news in singleList)
                     {
                         NewsWithPage newsWithPage = new NewsWithPage();

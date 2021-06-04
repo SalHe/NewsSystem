@@ -13,6 +13,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Whu.BLM.NewsSystem.Server.Data.Context;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authentication.Cookies;
+
 
 namespace Whu.BLM.NewsSystem.Server
 {
@@ -41,6 +44,14 @@ namespace Whu.BLM.NewsSystem.Server
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Whu.BLM.NewsSystem.Server", Version = "v1" });
             });
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                                .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme,
+            options =>
+            {
+                options.LoginPath = "/api/account/login";
+                options.AccessDeniedPath = "/api/account/denied";
+                options.LogoutPath = "/api/account/logout";
+        });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -59,6 +70,9 @@ namespace Whu.BLM.NewsSystem.Server
 
             app.UseRouting();
 
+            app.UseAuthorization();
+
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

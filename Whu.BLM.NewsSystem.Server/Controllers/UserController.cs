@@ -25,7 +25,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         /// <summary>
         /// 返回用户信息。
         /// </summary>
-        public User getUserInfo(int id)
+        public User GetUserInfo(int id)
         {
             try
             {
@@ -77,7 +77,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                 return false;
             }
         }
-        [HttpPost]
+        [HttpPost("register")]
         /// <summary>
         /// 用户注册。
         /// </summary>
@@ -105,13 +105,57 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                 return false;
             }
         }
-        [HttpGet("Login")]
+        [HttpPost("UserViewed")]
         /// <summary>
-        /// 用户登录。
+        /// 历史记录。
         /// </summary>
-        public bool UserLogin(string id,string password)
+        public bool Viewed(int idOfUser, int idOfNews)
         {
-
+            try
+            {
+                User u = NewsSystemContext.Users.Where(u => u.Id == idOfUser).FirstOrDefault();
+                u.VisitedNews.Add(NewsSystemContext.News.Where(n => n.Id == idOfUser).FirstOrDefault());
+                NewsSystemContext.SaveChanges();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        [HttpPost("UserLiked")]
+        /// <summary>
+        /// 用户喜欢的新闻。
+        /// </summary>
+        public bool Liked(int idOfUser, int idOfNews)
+        {
+            try
+            {
+                NewsSystemContext.Users.Where(u => u.Id == idOfUser).FirstOrDefault().LikedNews.Add(NewsSystemContext.News.Where(n => n.Id == idOfNews).FirstOrDefault());
+                NewsSystemContext.SaveChanges();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        [HttpPost("UserDisliked")]
+        /// <summary>
+        /// 用户不喜欢的新闻。
+        /// </summary>
+        public bool Disliked(int idOfUser, int idOfNews)
+        {
+            try
+            {
+                NewsSystemContext.Users.Where(u => u.Id == idOfUser).FirstOrDefault().DislikedNews.Add(NewsSystemContext.News.Where(n => n.Id == idOfNews).FirstOrDefault());
+                NewsSystemContext.SaveChanges();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
         [NonAction]
         /// <summary>
