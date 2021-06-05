@@ -21,7 +21,21 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         {
             NewsSystemContext = newsSystemContext;
         }
-        [HttpGet]
+        public struct changeInfoModel
+        {
+           public int id; public string newUserName; public string newPassWord;
+        }
+        public struct registerModel
+        {
+            public string name;
+            public string password;
+        }
+        public struct recordModel
+        {
+            public int idOfUser;
+            public int idOfNews;
+        }
+        [HttpGet("info/{id}")]
         /// <summary>
         /// 返回用户信息。
         /// </summary>
@@ -38,7 +52,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
             }
 
         }
-        [HttpDelete]
+        [HttpDelete("User/{id}")]
         /// <summary>
         /// 删除指定ID的用户。
         /// </summary>
@@ -56,19 +70,19 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                 return false;
             }
         }
-        [HttpPut]
+        [HttpPut("Info/{mdl}")]
         /// <summary>
         /// 修改用户信息。
         /// </summary>
-        public bool ChangeUserInfo(int id, string newUserName, string newPassWord)
+        public bool ChangeUserInfo(changeInfoModel mdl)
         {
-            if (JudgeLegality(newUserName) == false || JudgeLegality(newPassWord) == false)
+            if (JudgeLegality(mdl.newUserName) == false || JudgeLegality(mdl.newPassWord) == false)
                 return false;
             try
             {
-                var u = NewsSystemContext.Users.Where(u => u.Id == id).FirstOrDefault();
-                u.Username = newUserName;
-                u.Password = MD5(newPassWord);
+                var u = NewsSystemContext.Users.Where(u => u.Id == mdl.id).FirstOrDefault();
+                u.Username = mdl.newUserName;
+                u.Password = MD5(mdl.newPassWord);
                 NewsSystemContext.SaveChanges();
                 return true;
             }
@@ -77,19 +91,19 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                 return false;
             }
         }
-        [HttpPost("register")]
+        [HttpPost("Info/{mdl}")]
         /// <summary>
         /// 用户注册。
         /// </summary>
-        public bool UserRegistration(string username,string password)
+        public bool UserRegistration(registerModel mdl)
         {
-            if (JudgeLegality(username) == false || JudgeLegality(password) == false)
+            if (JudgeLegality(mdl.name) == false || JudgeLegality(mdl.password) == false)
                 return false;
             try
             {
                 User newUser = new User();
-                newUser.Username = username;
-                newUser.Password = MD5(password);
+                newUser.Username = mdl.name;
+                newUser.Password = MD5(mdl.password);
                 int newid = new Random((int)DateTime.Now.Ticks).Next(0,65535);
                 while(NewsSystemContext.Users.Where(u => u.Id == newid).ToList().Count > 0)
                 {
@@ -105,16 +119,16 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                 return false;
             }
         }
-        [HttpPost("UserViewed")]
+        [HttpPost("record/{mdl}")]
         /// <summary>
         /// 历史记录。
         /// </summary>
-        public bool Viewed(int idOfUser, int idOfNews)
+        public bool Viewed(recordModel mdl)
         {
             try
             {
-                User u = NewsSystemContext.Users.Where(u => u.Id == idOfUser).FirstOrDefault();
-                u.VisitedNews.Add(NewsSystemContext.News.Where(n => n.Id == idOfUser).FirstOrDefault());
+                User u = NewsSystemContext.Users.Where(u => u.Id == mdl.idOfUser).FirstOrDefault();
+                u.VisitedNews.Add(NewsSystemContext.News.Where(n => n.Id == mdl.idOfNews).FirstOrDefault());
                 NewsSystemContext.SaveChanges();
                 return true;
             }
@@ -123,15 +137,15 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                 return false;
             }
         }
-        [HttpPost("UserLiked")]
+        [HttpPost("liked/{mdl}")]
         /// <summary>
         /// 用户喜欢的新闻。
         /// </summary>
-        public bool Liked(int idOfUser, int idOfNews)
+        public bool Liked(recordModel mdl)
         {
             try
             {
-                NewsSystemContext.Users.Where(u => u.Id == idOfUser).FirstOrDefault().LikedNews.Add(NewsSystemContext.News.Where(n => n.Id == idOfNews).FirstOrDefault());
+                NewsSystemContext.Users.Where(u => u.Id == mdl.idOfUser).FirstOrDefault().LikedNews.Add(NewsSystemContext.News.Where(n => n.Id == mdl.idOfNews).FirstOrDefault());
                 NewsSystemContext.SaveChanges();
                 return true;
             }
@@ -140,15 +154,15 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                 return false;
             }
         }
-        [HttpPost("UserDisliked")]
+        [HttpPost("disliked/{mdl}")]
         /// <summary>
         /// 用户不喜欢的新闻。
         /// </summary>
-        public bool Disliked(int idOfUser, int idOfNews)
+        public bool Disliked(recordModel mdl)
         {
             try
             {
-                NewsSystemContext.Users.Where(u => u.Id == idOfUser).FirstOrDefault().DislikedNews.Add(NewsSystemContext.News.Where(n => n.Id == idOfNews).FirstOrDefault());
+                NewsSystemContext.Users.Where(u => u.Id == mdl.idOfUser).FirstOrDefault().DislikedNews.Add(NewsSystemContext.News.Where(n => n.Id == mdl.idOfNews).FirstOrDefault());
                 NewsSystemContext.SaveChanges();
                 return true;
             }

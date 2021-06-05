@@ -28,6 +28,14 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
             public News news;
             public int page;
         }
+        public struct releaseModel
+        {
+            public int id;public string title;public string abstractcontent;public string originalURL;public NewsCategory category;
+        }
+        public struct changeModel
+        {
+            public int id;public string title; public string content;public NewsCategory category;
+        }
         /// <summary>
         /// 检索一个新闻中是否存在相应字段。
         /// </summary>
@@ -44,7 +52,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         /// <summary>
         /// 返回特定搜索字段的含页码的新闻列表。
         /// </summary>
-        [HttpGet("Bysearchword")]
+        [HttpGet("newsBySearchWord/{searchWord}")]
         public List<NewsWithPage> ListOfNewsWithPages(string searchWord)
         {
             List<NewsWithPage> list = new List<NewsWithPage>();
@@ -73,7 +81,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         /// <summary>
         /// 返回指定类别的含页码的新闻列表。
         /// </summary>
-        [HttpGet("Bycategory")]
+        [HttpGet("newsByCategory/{idOfCategory}")]
         public List<NewsWithPage> ListOfNewsWithPages(int idOfCategory)
         {
             List<NewsWithPage> list = new List<NewsWithPage>();
@@ -103,7 +111,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         /// <summary>
         /// 删除指定新闻ID的新闻。
         /// </summary>
-        [HttpDelete]
+        [HttpDelete("News/{IdOfNews}")]
         public bool DeleteNews(int IdOfNews)
         {
             try
@@ -121,18 +129,18 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         /// <summary>
         /// 发布新闻。
         /// </summary>
-        [HttpPost]
-        public bool ReleaseNews(int id, string title, string abstractcontent, string originalURL, NewsCategory category)
+        [HttpPost("News/{mdl}")]
+        public bool ReleaseNews(releaseModel mdl)
         {
             try
             {
                 News news = new News();
-                news.Id = id;
-                news.Title = title;
-                news.AbstractContent = abstractcontent;
-                news.OringinUrl = originalURL;
-                news.NewsCategory = category;
-                var categoryInDBSet = NewsSystemContext.NewsCategories.Where(categoryInDBSet => categoryInDBSet.Name == category.Name).FirstOrDefault();
+                news.Id = mdl.id;
+                news.Title = mdl.title;
+                news.AbstractContent = mdl.abstractcontent;
+                news.OringinUrl = mdl.originalURL;
+                news.NewsCategory = mdl.category;
+                var categoryInDBSet = NewsSystemContext.NewsCategories.Where(categoryInDBSet => categoryInDBSet.Name == mdl.category.Name).FirstOrDefault();
                 categoryInDBSet.News.Add(news);
                 NewsSystemContext.News.Add(news);
                 NewsSystemContext.SaveChanges();
@@ -146,18 +154,18 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         /// <summary>
         /// 调整新闻。
         /// </summary>
-        [HttpPut]
-        public bool ChangeNews(int id,string title,string content,NewsCategory category)
+        [HttpPut("News/{mdl}")]
+        public bool ChangeNews(changeModel mdl)
         {
             try
             {
-                var news = NewsSystemContext.News.Where(news => news.Id == id).FirstOrDefault();
-                news.AbstractContent = content;
-                news.Title = title;
-                if(news.NewsCategory != category)
+                var news = NewsSystemContext.News.Where(news => news.Id == mdl.id).FirstOrDefault();
+                news.AbstractContent = mdl.content;
+                news.Title = mdl.title;
+                if(news.NewsCategory != mdl.category)
                 {
-                    news.NewsCategory = category;
-                    var categoryInDBSet = NewsSystemContext.NewsCategories.Where(categoryInDBSet => categoryInDBSet.Name == category.Name).FirstOrDefault();
+                    news.NewsCategory = mdl.category;
+                    var categoryInDBSet = NewsSystemContext.NewsCategories.Where(categoryInDBSet => categoryInDBSet.Name == mdl.category.Name).FirstOrDefault();
                     categoryInDBSet.News.Add(news);
                 }
                 NewsSystemContext.SaveChanges();
