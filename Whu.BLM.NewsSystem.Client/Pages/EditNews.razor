@@ -1,0 +1,104 @@
+﻿@page "/add"
+@page "/edit/{newsId:int}"
+@inject HttpClient _httpClient
+@inject MessageService _message
+@using Whu.BLM.NewsSystem.Shared.Entity.Content
+@using Whu.BLM.NewsSystem.Shared.Entity.Identity
+@using System.ComponentModel.DataAnnotations
+
+<Form Model="@News"
+      LabelColSpan="4"
+      WrapperColSpan="20"
+      OnFinish="OnConfirmEditing">
+    <FormItem Label="标题">
+        <Input @bind-Value="@context.Title"/>
+    </FormItem>
+    <FormItem Label="URL">
+        <Input @bind-Value="@context.OriginUrl"/>
+    </FormItem>
+    <FormItem Label="摘要">
+        <TextArea @bind-Value="@context.AbstractContent" MinRows="5" MaxRows="10"></TextArea>
+    </FormItem>
+    <div style="width: 100%; display: flex; justify-content: flex-end">
+        <Button Type="@ButtonType.Default" HtmlType="submit">提交修改</Button>
+    </div>
+</Form>
+
+@code {
+
+    [Parameter]
+    public int? NewsId { get; set; }
+
+    class NewsModel
+    {
+        [Required(ErrorMessage = "请输入标题")]
+        [MinLength(5, ErrorMessage = "摘要内容不得小于5字符")]
+        public string Title { get; set; }
+
+        [Required(ErrorMessage = "请输入新闻摘要")]
+        [MinLength(20, ErrorMessage = "摘要内容不得小于20字符")]
+        public string AbstractContent { get; set; }
+
+        [Required(ErrorMessage = "请输入新闻URL")]
+        [Url(ErrorMessage = "请输入一个合法的URL")]
+        public string OriginUrl { get; set; }
+    }
+
+    private NewsModel News { get; set; } = new NewsModel();
+
+    protected override Task OnParametersSetAsync()
+    {
+    // News = await _httpClient.GetFromJsonAsync<News>("news/{NewsId}");
+        if (NewsId == null)
+        {
+            News = new NewsModel()
+            {
+                Title = string.Empty,
+                OriginUrl = string.Empty,
+                AbstractContent = string.Empty
+            };
+        }
+        else
+        {
+            var news = new News()
+            {
+                Id = NewsId.Value,
+                Title = "蔡徐坤单独和baby相约出海？本尊与黄旭熙晒照辟谣",
+                AbstractContent = "网易娱乐5月31日报道 5月31日下午，有网友发现baby与蔡徐坤疑似乘坐了同一艘游艇出海，引发恋情猜测。随后，baby的粉丝发微博澄清辟谣，她晒出baby闺蜜的对话，表示发布照片的朋友害怕baby被粉丝骂就删除了照片，本来就是出去玩。\n\nAngelababy朋友在微博发文回应照片事件：“本就是朋友之间出去玩，现在为了怕自己朋友被骂，连日常都不能发了，请各位不要再造谣了谢谢”。",
+                OringinUrl = "https://www.163.com/ent/article/GBBTT15G00038FO9.html",
+                DislikedBy = new List<User>(),
+                LikedBy = new List<User>(),
+                NewsCategory = new NewsCategory()
+                {
+                    Id = 1,
+                    Name = "娱乐",
+                    News = new List<News>()
+                },
+                VisitedBy = new List<User>()
+            };
+            News = new NewsModel()
+            {
+                Title = news.Title,
+                OriginUrl = news.OringinUrl,
+                AbstractContent = news.AbstractContent
+            };
+        }
+        return Task.CompletedTask;
+    }
+
+    private Task OnConfirmEditing()
+    {
+        if (NewsId == null)
+        {
+    // TODO 接入添加新闻接口
+            _message.Info("您的添加已通过");
+        }
+        else
+        {
+    // TODO 接入编辑新闻接口
+            _message.Info("您的编辑已通过");
+        }
+        return Task.CompletedTask;
+    }
+
+}

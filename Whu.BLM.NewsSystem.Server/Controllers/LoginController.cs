@@ -1,11 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Whu.BLM.NewsSystem.Server.Constants;
+using Whu.BLM.NewsSystem.Server.Data.Context;
+using Whu.BLM.NewsSystem.Server.Exceptions;
+using Whu.BLM.NewsSystem.Server.Model;
+using Whu.BLM.NewsSystem.Shared.Entity.Identity;
 
 namespace Whu.BLM.NewsSystem.Server.Controllers
 {
@@ -13,24 +23,50 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
     [Route("api/account")]
     public class AccountController : ControllerBase
     {
-        [HttpGet("login")]
-        public async Task<string> Login(string username, string password, string? returnUrl = null)
+        private readonly NewsSystemContext _newsSystemContext;
+        private readonly JwtOptions _jwtOptions;
+        private readonly JwtSecurityTokenHandler _jwtSecurityTokenHandler;
+
+        public AccountController(NewsSystemContext newsSystemContext, JwtOptions jwtOptions,
+            JwtSecurityTokenHandler jwtSecurityTokenHandler)
         {
-            if (returnUrl != null) return "请先登录";
+            _newsSystemContext = newsSystemContext;
+            _jwtOptions = jwtOptions;
+            _jwtSecurityTokenHandler = jwtSecurityTokenHandler;
+        }
 
-            if (ValidateAuthentication(username, password))
+        [HttpGet("login")]
+        public async Task<IActionResult> Login(string username, string password, string? returnUrl = null)
+        {
+            if (returnUrl != null) return Unauthorized("请先登录");
+
+            try
             {
-                var claims = new List<Claim>
-                {
-                    new("user", username),
-                    new("role", username == "admin" ? "admin" : "user"),
-                };
-                await HttpContext.SignInAsync(new ClaimsPrincipal(new ClaimsIdentity(claims,
-                    CookieAuthenticationDefaults.AuthenticationScheme, "user", "role")));
-                return "登录成功！";
+                var user = await ValidateAuthentication(username, password);
+                var jwtToken = new JwtSecurityToken(
+                    _jwtOptions.Issuer,
+                    _jwtOptions.Audience,
+                    new[]
+                    {
+                        new Claim(ClaimTypes.Role, user.UserGroup.ToString()),
+                        new Claim(MyClaimTypes.Username, user.Username),
+                        new Claim(MyClaimTypes.UserId, user.Id.ToString())
+                    },
+                    null, DateTime.Now.Add(TimeSpan.FromDays(3)),
+                    new SigningCredentials(_jwtOptions.SecurityKey, SecurityAlgorithms.HmacSha256));
+                string jwt = _jwtSecurityTokenHandler.WriteToken(jwtToken);
+                return Ok(jwt);
             }
-
-            return "登录失败！";
+            catch (UserNotFoundException e)
+            {
+                return Problem("找不到用户");
+            }
+            catch (PasswordErrorException e)
+            {
+                // 虽然可以从信息推断出密码错了
+                // 但是我们还是不明文提示
+                return Problem("用户信息错误");
+            }
         }
 
         [HttpGet("denied")]
@@ -45,10 +81,36 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
             await HttpContext.SignOutAsync();
             return "登出成功";
         }
+
         [NonAction]
-        private bool ValidateAuthentication(string username, string password)
+        private async Task<User> ValidateAuthentication(string username, string password)
         {
-            return !string.IsNullOrEmpty(username) && password.Equals("123456");
+            var user = await _newsSystemContext.Users.FirstAsync(u => u.Username.Equals(username));
+            if (user == null) throw new UserNotFoundException();
+            if (!user.Password.Equals(password)) throw new PasswordErrorException();
+            return user;
+        }
+
+        [HttpGet("info")]
+        public string TestGetInfo()
+        {
+            return "可以匿名访问的信息";
+        }
+
+        [HttpGet("user_info")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<string> TestGetUserInfo()
+        {
+            var user = await HttpContext.GetCurrentUser(_newsSystemContext.Users);
+            return $"普通用户信息：{user.Username}";
+        }
+
+        [HttpGet("admin_info")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        public async Task<string> TestGetAdminInfo()
+        {
+            var user = await HttpContext.GetCurrentUser(_newsSystemContext.Users);
+            return $"管理员信息：{user.Username}";
         }
     }
 }
