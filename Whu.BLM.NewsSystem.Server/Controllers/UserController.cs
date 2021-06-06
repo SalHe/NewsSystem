@@ -8,7 +8,7 @@ using Whu.BLM.NewsSystem.Shared;
 using Whu.BLM.NewsSystem.Shared.Entity.Identity;
 using Whu.BLM.NewsSystem.Server.Data.Context;
 using System.Text.RegularExpressions;
-
+using Whu.BLM.NewsSystem.Shared.Entity.Content;
 namespace Whu.BLM.NewsSystem.Server.Controllers
 {
     [ApiController]
@@ -21,20 +21,19 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         {
             NewsSystemContext = newsSystemContext;
         }
-        public struct changeInfoModel
+        public class changeInfoModel
         {
-           public int id; public string newUserName; public string newPassWord;
+            public int id { get; set; } public string newUserName { get; set; }
+            public string newPassWord { get; set; }
         }
-        public struct registerModel
+        public class registerModel
         {
-            public string name;
-            public string password;
+            public string name { get; set; }
+            public string password { get; set; }
         }
-        public struct recordModel
-        {
-            public int idOfUser;
-            public int idOfNews;
-        }
+
+
+
         [HttpGet("info/{id}")]
         /// <summary>
         /// 返回用户信息。
@@ -44,6 +43,8 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
             try
             {
                 var u = NewsSystemContext.Users.Where(u => u.Id == id);
+                if (u == null)
+                    return new User();
                 return u.First();
             }
             catch
@@ -56,119 +57,142 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         /// <summary>
         /// 删除指定ID的用户。
         /// </summary>
-        public bool DeleteUser(int id)
+        public IActionResult DeleteUser(int id)
         {
             try
             {
-                var u = NewsSystemContext.Users.Where(u => u.Id == id);
-                NewsSystemContext.Users.Remove(u.FirstOrDefault());
+                var u = NewsSystemContext.Users.Where(u => u.Id == id).FirstOrDefault();
+                if (u == null)
+                    return NotFound("不存在该用户");
+                NewsSystemContext.Users.Remove(u);
                 NewsSystemContext.SaveChanges();
-                return true;
+                return Ok("");
             }
             catch
             {
-                return false;
+                return BadRequest("未知错误");
             }
         }
-        [HttpPut("Info/{mdl}")]
+        [HttpPut("Info")]
         /// <summary>
         /// 修改用户信息。
         /// </summary>
-        public bool ChangeUserInfo(changeInfoModel mdl)
+        public IActionResult ChangeUserInfo(changeInfoModel mdl)
         {
-            if (JudgeLegality(mdl.newUserName) == false || JudgeLegality(mdl.newPassWord) == false)
-                return false;
+            if (JudgeLegality(mdl.newUserName) == false || JudgeLegality(mdl.newPassWord) == false || mdl.newPassWord.Length < 7)
+                return BadRequest("字符不合法");
             try
             {
                 var u = NewsSystemContext.Users.Where(u => u.Id == mdl.id).FirstOrDefault();
+                if (u == null)
+                    return NotFound("不存在该用户");
                 u.Username = mdl.newUserName;
                 u.Password = MD5(mdl.newPassWord);
                 NewsSystemContext.SaveChanges();
-                return true;
+                return Ok("");
             }
             catch
             {
-                return false;
+                return BadRequest("未知错误");
             }
         }
-        [HttpPost("Info/{mdl}")]
+        [HttpPost("Info")]
         /// <summary>
         /// 用户注册。
         /// </summary>
-        public bool UserRegistration(registerModel mdl)
+        public IActionResult UserRegistration(registerModel mdl)
         {
-            if (JudgeLegality(mdl.name) == false || JudgeLegality(mdl.password) == false)
-                return false;
+            if (JudgeLegality(mdl.name) == false || JudgeLegality(mdl.password) == false || mdl.password.Length < 7)
+                return BadRequest("字符不合法");
             try
             {
+                if (NewsSystemContext.Users.Count() > 65535)
+                    return Forbid("用户已满");
                 User newUser = new User();
                 newUser.Username = mdl.name;
                 newUser.Password = MD5(mdl.password);
-                int newid = new Random((int)DateTime.Now.Ticks).Next(0,65535);
-                while(NewsSystemContext.Users.Where(u => u.Id == newid).ToList().Count > 0)
+                int newid = new Random((int)DateTime.Now.Ticks).Next(0, 65535);
+                while (NewsSystemContext.Users.Where(u => u.Id == newid).ToList().Count > 0)
                 {
-                    newid = new Random((int)DateTime.Now.Ticks).Next(0,65535);
+                    newid = new Random((int)DateTime.Now.Ticks).Next(0, 65535);
                 }
                 newUser.Id = newid;
                 NewsSystemContext.Users.Add(newUser);
                 NewsSystemContext.SaveChanges();
-                return true;
+                return Ok("");
             }
             catch
             {
-                return false;
+                return BadRequest("未知错误");
             }
         }
-        [HttpPost("record/{mdl}")]
+        [HttpPost("record/{idOfUser}/{idOfNews}")]
         /// <summary>
         /// 历史记录。
         /// </summary>
-        public bool Viewed(recordModel mdl)
+        public IActionResult Viewed(int idOfNews, int idOfUser)
         {
             try
             {
-                User u = NewsSystemContext.Users.Where(u => u.Id == mdl.idOfUser).FirstOrDefault();
-                u.VisitedNews.Add(NewsSystemContext.News.Where(n => n.Id == mdl.idOfNews).FirstOrDefault());
+                User u = NewsSystemContext.Users.Where(u => u.Id == idOfUser).FirstOrDefault();
+                if (u == null)
+                    return NotFound("不存在该用户");
+                News n = NewsSystemContext.News.Where(n => n.Id == idOfNews).FirstOrDefault();
+                if (n == null)
+                    return NotFound("不存在该新闻");
+                u.VisitedNews.Add(n);
                 NewsSystemContext.SaveChanges();
-                return true;
+                return Ok("");
             }
             catch
             {
-                return false;
+                return BadRequest("未知错误");
             }
         }
-        [HttpPost("liked/{mdl}")]
+        [HttpPost("liked/{idOfUser}/{idOfNews}")]
         /// <summary>
         /// 用户喜欢的新闻。
         /// </summary>
-        public bool Liked(recordModel mdl)
+        public IActionResult Liked(int idOfNews, int idOfUser)
         {
             try
             {
-                NewsSystemContext.Users.Where(u => u.Id == mdl.idOfUser).FirstOrDefault().LikedNews.Add(NewsSystemContext.News.Where(n => n.Id == mdl.idOfNews).FirstOrDefault());
+                User u = NewsSystemContext.Users.Where(u => u.Id == idOfUser).FirstOrDefault();
+                if(u == null)
+                    return NotFound("不存在该用户");
+                News n = NewsSystemContext.News.Where(n => n.Id == idOfNews).FirstOrDefault();
+                if (n == null)
+                    return NotFound("不存在该新闻");
+                u.LikedNews.Add(n);
                 NewsSystemContext.SaveChanges();
-                return true;
+                return Ok("");
             }
             catch
             {
-                return false;
+                return BadRequest("未知错误");
             }
         }
-        [HttpPost("disliked/{mdl}")]
+        [HttpPost("disliked/{idOfUser}/{idOfNews}")]
         /// <summary>
         /// 用户不喜欢的新闻。
         /// </summary>
-        public bool Disliked(recordModel mdl)
+        public IActionResult Disliked(int idOfNews,int idOfUser)
         {
             try
             {
-                NewsSystemContext.Users.Where(u => u.Id == mdl.idOfUser).FirstOrDefault().DislikedNews.Add(NewsSystemContext.News.Where(n => n.Id == mdl.idOfNews).FirstOrDefault());
+                User u = NewsSystemContext.Users.Where(u => u.Id == idOfUser).FirstOrDefault();
+                if (u == null)
+                    return NotFound("不存在该用户");
+                News n = NewsSystemContext.News.Where(n => n.Id == idOfNews).FirstOrDefault();
+                if (n == null)
+                    return NotFound("不存在该新闻");
+                u.DislikedNews.Add(n);
                 NewsSystemContext.SaveChanges();
-                return true;
+                return Ok("");
             }
             catch
             {
-                return false;
+                return BadRequest("未知错误");
             }
         }
         [NonAction]

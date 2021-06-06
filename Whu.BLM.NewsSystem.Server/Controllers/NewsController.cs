@@ -28,13 +28,20 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
             public News news;
             public int page;
         }
-        public struct releaseModel
+        public class releaseModel
         {
-            public int id;public string title;public string abstractcontent;public string originalURL;public NewsCategory category;
+            public int id { get; set; }
+            public string title { get; set; }
+            public string abstractcontent { get; set; }
+            public string originalURL { get; set; }
+            public NewsCategory category { get; set; }
         }
-        public struct changeModel
+        public class changeModel
         {
-            public int id;public string title; public string content;public NewsCategory category;
+            public int id { get; set; }
+            public string title { get; set; }
+            public string content { get; set; }
+            public NewsCategory category { get; set; }
         }
         /// <summary>
         /// 检索一个新闻中是否存在相应字段。
@@ -52,7 +59,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         /// <summary>
         /// 返回特定搜索字段的含页码的新闻列表。
         /// </summary>
-        [HttpGet("newsBySearchWord/{searchWord}")]
+        [HttpGet("BySearchWord/{searchWord}")]
         public List<NewsWithPage> ListOfNewsWithPages(string searchWord)
         {
             List<NewsWithPage> list = new List<NewsWithPage>();
@@ -73,7 +80,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
             }
             catch
             {
-                return list;
+                return new List<NewsWithPage>();
             }
 
         }
@@ -81,12 +88,14 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         /// <summary>
         /// 返回指定类别的含页码的新闻列表。
         /// </summary>
-        [HttpGet("newsByCategory/{idOfCategory}")]
+        [HttpGet("ByCategory/{idOfCategory}")]
         public List<NewsWithPage> ListOfNewsWithPages(int idOfCategory)
         {
             List<NewsWithPage> list = new List<NewsWithPage>();
             try
             {
+                if (NewsSystemContext.NewsCategories.Where(nc => nc.Id == idOfCategory).FirstOrDefault() == null)
+                    return list;
                 for (int i = 1; i <= 10; i++)
                 {
                     List<News> singleList = NewsSystemContext.News.Where(news => news.NewsCategory.Id == idOfCategory)
@@ -104,7 +113,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
             }
             catch
             {
-                return list;
+                return new List<NewsWithPage>();
             }
 
         }
@@ -112,28 +121,32 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         /// 删除指定新闻ID的新闻。
         /// </summary>
         [HttpDelete("News/{IdOfNews}")]
-        public bool DeleteNews(int IdOfNews)
+        public IActionResult DeleteNews(int IdOfNews)
         {
             try
             {
-                var item = NewsSystemContext.News.Where(news => news.Id == IdOfNews);
+                var item = NewsSystemContext.News.Where(news => news.Id == IdOfNews).FirstOrDefault();
+                if (item == null)
+                    return NotFound("不存在该新闻");
                 NewsSystemContext.Remove(item);
                 NewsSystemContext.SaveChanges();
-                return true;
+                return Ok("");
             }
             catch
             {
-                return false;
+                return BadRequest("未知错误" );
             }
         }
         /// <summary>
         /// 发布新闻。
         /// </summary>
-        [HttpPost("News/{mdl}")]
-        public bool ReleaseNews(releaseModel mdl)
+        [HttpPost("News")]
+        public IActionResult ReleaseNews(releaseModel mdl)
         {
             try
             {
+                if (NewsSystemContext.News.Where(n => n.Id == mdl.id).FirstOrDefault() != null)
+                    return BadRequest("ID已存在");
                 News news = new News();
                 news.Id = mdl.id;
                 news.Title = mdl.title;
@@ -141,39 +154,45 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                 news.OringinUrl = mdl.originalURL;
                 news.NewsCategory = mdl.category;
                 var categoryInDBSet = NewsSystemContext.NewsCategories.Where(categoryInDBSet => categoryInDBSet.Name == mdl.category.Name).FirstOrDefault();
+                if (categoryInDBSet == null)
+                    return NotFound("不存在该类别");
                 categoryInDBSet.News.Add(news);
                 NewsSystemContext.News.Add(news);
                 NewsSystemContext.SaveChanges();
-                return true;
+                return Ok("");
             }
             catch
             {
-                return false;
+                return BadRequest("未知错误");
             }
         }
         /// <summary>
         /// 调整新闻。
         /// </summary>
-        [HttpPut("News/{mdl}")]
-        public bool ChangeNews(changeModel mdl)
+        [HttpPut("News")]
+        public IActionResult ChangeNews(changeModel mdl)
         {
             try
             {
                 var news = NewsSystemContext.News.Where(news => news.Id == mdl.id).FirstOrDefault();
+                if (news == null)
+                    return NotFound("不存在该新闻");
                 news.AbstractContent = mdl.content;
                 news.Title = mdl.title;
                 if(news.NewsCategory != mdl.category)
                 {
                     news.NewsCategory = mdl.category;
                     var categoryInDBSet = NewsSystemContext.NewsCategories.Where(categoryInDBSet => categoryInDBSet.Name == mdl.category.Name).FirstOrDefault();
+                    if (categoryInDBSet == null)
+                        return NotFound("不存在该类别");
                     categoryInDBSet.News.Add(news);
                 }
                 NewsSystemContext.SaveChanges();
-                return true;
+                return Ok("");
             }
             catch
             {
-                return false;
+                return BadRequest("未知错误");
             }
         }
     }
