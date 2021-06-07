@@ -7,6 +7,10 @@ using Microsoft.Extensions.Logging;
 using Whu.BLM.NewsSystem.Server.Data.Context;
 using Whu.BLM.NewsSystem.Shared;
 using Whu.BLM.NewsSystem.Shared.Entity.Content;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+
 
 namespace Whu.BLM.NewsSystem.Server.Controllers
 {
@@ -121,6 +125,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         /// 删除指定新闻ID的新闻。
         /// </summary>
         [HttpDelete("News/{IdOfNews}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public IActionResult DeleteNews(int IdOfNews)
         {
             try
@@ -141,6 +146,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         /// 发布新闻。
         /// </summary>
         [HttpPost("News")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public IActionResult ReleaseNews(releaseModel mdl)
         {
             try
@@ -170,6 +176,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         /// 调整新闻。
         /// </summary>
         [HttpPut("News")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public IActionResult ChangeNews(changeModel mdl)
         {
             try

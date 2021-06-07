@@ -9,6 +9,12 @@ using Whu.BLM.NewsSystem.Shared.Entity.Identity;
 using Whu.BLM.NewsSystem.Server.Data.Context;
 using System.Text.RegularExpressions;
 using Whu.BLM.NewsSystem.Shared.Entity.Content;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+
+
+
 namespace Whu.BLM.NewsSystem.Server.Controllers
 {
     [ApiController]
@@ -23,7 +29,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         }
         public class changeInfoModel
         {
-            public int id { get; set; } public string newUserName { get; set; }
+            public string newUserName { get; set; }
             public string newPassWord { get; set; }
         }
         public class registerModel
@@ -33,10 +39,29 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         }
 
 
+        /// <summary>
+        /// 返回当前用户信息。
+        /// </summary>
+        [HttpGet("info")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<User> GetUserInfo()
+        {
+            try
+            {
+                var user = await HttpContext.GetCurrentUser(NewsSystemContext.Users);
+                if (user == null)
+                    return new User();
+                return user;
+            }
+            catch
+            {
+                return new User();
+            }
 
+        }
         [HttpGet("info/{id}")]
         /// <summary>
-        /// 返回用户信息。
+        /// 匿名访问指定id的用户信息。
         /// </summary>
         public User GetUserInfo(int id)
         {
@@ -53,10 +78,12 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
             }
 
         }
-        [HttpDelete("User/{id}")]
+
         /// <summary>
         /// 删除指定ID的用户。
         /// </summary>
+        [HttpDelete("User/{id}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public IActionResult DeleteUser(int id)
         {
             try
@@ -73,17 +100,18 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                 return BadRequest("未知错误");
             }
         }
-        [HttpPut("Info")]
         /// <summary>
         /// 修改用户信息。
         /// </summary>
-        public IActionResult ChangeUserInfo(changeInfoModel mdl)
+        [HttpPut("Info")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> ChangeUserInfo(changeInfoModel mdl)
         {
-            if (JudgeLegality(mdl.newUserName) == false || JudgeLegality(mdl.newPassWord) == false || mdl.newPassWord.Length < 7)
+            if (JudgeLegality(mdl.newUserName) == false || JudgeLegality(mdl.newPassWord) == false || mdl.newPassWord.Length < 6)
                 return BadRequest("字符不合法");
             try
             {
-                var u = NewsSystemContext.Users.Where(u => u.Id == mdl.id).FirstOrDefault();
+                var u = await HttpContext.GetCurrentUser(NewsSystemContext.Users);
                 if (u == null)
                     return NotFound("不存在该用户");
                 u.Username = mdl.newUserName;
@@ -96,13 +124,13 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                 return BadRequest("未知错误");
             }
         }
-        [HttpPost("Info")]
         /// <summary>
         /// 用户注册。
         /// </summary>
+        [HttpPost("Info")]
         public IActionResult UserRegistration(registerModel mdl)
         {
-            if (JudgeLegality(mdl.name) == false || JudgeLegality(mdl.password) == false || mdl.password.Length < 7)
+            if (JudgeLegality(mdl.name) == false || JudgeLegality(mdl.password) == false || mdl.password.Length < 6)
                 return BadRequest("字符不合法");
             try
             {
@@ -126,15 +154,16 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                 return BadRequest("未知错误");
             }
         }
-        [HttpPost("record/{idOfUser}/{idOfNews}")]
         /// <summary>
         /// 历史记录。
         /// </summary>
-        public IActionResult Viewed(int idOfNews, int idOfUser)
+        [HttpPost("record/{idOfNews}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> Viewed(int idOfNews)
         {
             try
             {
-                User u = NewsSystemContext.Users.Where(u => u.Id == idOfUser).FirstOrDefault();
+                var u = await HttpContext.GetCurrentUser(NewsSystemContext.Users);
                 if (u == null)
                     return NotFound("不存在该用户");
                 News n = NewsSystemContext.News.Where(n => n.Id == idOfNews).FirstOrDefault();
@@ -149,16 +178,17 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                 return BadRequest("未知错误");
             }
         }
-        [HttpPost("liked/{idOfUser}/{idOfNews}")]
         /// <summary>
         /// 用户喜欢的新闻。
         /// </summary>
-        public IActionResult Liked(int idOfNews, int idOfUser)
+        [HttpPost("liked/{idOfNews}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> Liked(int idOfNews)
         {
             try
             {
-                User u = NewsSystemContext.Users.Where(u => u.Id == idOfUser).FirstOrDefault();
-                if(u == null)
+                var u = await HttpContext.GetCurrentUser(NewsSystemContext.Users);
+                if (u == null)
                     return NotFound("不存在该用户");
                 News n = NewsSystemContext.News.Where(n => n.Id == idOfNews).FirstOrDefault();
                 if (n == null)
@@ -172,15 +202,16 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                 return BadRequest("未知错误");
             }
         }
-        [HttpPost("disliked/{idOfUser}/{idOfNews}")]
         /// <summary>
         /// 用户不喜欢的新闻。
         /// </summary>
-        public IActionResult Disliked(int idOfNews,int idOfUser)
+        [HttpPost("disliked/{idOfNews}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> Disliked(int idOfNews)
         {
             try
             {
-                User u = NewsSystemContext.Users.Where(u => u.Id == idOfUser).FirstOrDefault();
+                var u = await HttpContext.GetCurrentUser(NewsSystemContext.Users);
                 if (u == null)
                     return NotFound("不存在该用户");
                 News n = NewsSystemContext.News.Where(n => n.Id == idOfNews).FirstOrDefault();
@@ -195,10 +226,10 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                 return BadRequest("未知错误");
             }
         }
-        [NonAction]
         /// <summary>
-        /// 对用户进行MD5加密
+        /// 对用户密码进行MD5加密
         /// </summary>
+        [NonAction]
         public static string MD5(string Text)
         {
             byte[] buffer = System.Text.Encoding.Default.GetBytes(Text);
@@ -222,10 +253,10 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                 throw;
             }
         }
-        [NonAction]
         /// <summary>
         /// 检验字符串合法性
         /// </summary>
+        [NonAction]
         public bool JudgeLegality(string str)
         {
 
