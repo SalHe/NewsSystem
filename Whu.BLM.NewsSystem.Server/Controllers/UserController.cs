@@ -107,7 +107,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> ChangeUserInfo(changeInfoModel mdl)
         {
-            if (JudgeLegality(mdl.newUserName) == false || JudgeLegality(mdl.newPassWord) == false || mdl.newPassWord.Length < 7)
+            if (JudgeLegality(mdl.newUserName) == false || JudgeLegality(mdl.newPassWord) == false || mdl.newPassWord.Length < 6)
                 return BadRequest("字符不合法");
             try
             {
@@ -130,7 +130,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         [HttpPost("Info")]
         public IActionResult UserRegistration(registerModel mdl)
         {
-            if (JudgeLegality(mdl.name) == false || JudgeLegality(mdl.password) == false || mdl.password.Length < 7)
+            if (JudgeLegality(mdl.name) == false || JudgeLegality(mdl.password) == false || mdl.password.Length < 6)
                 return BadRequest("字符不合法");
             try
             {
