@@ -23,6 +23,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{BAE35D
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Client", "Client", "{9CCE2977-BC40-4255-A352-B0ED97F57765}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Whu.BLM.NewsSystem.Server.Domain", "Whu.BLM.NewsSystem.Server.Domain\Whu.BLM.NewsSystem.Server.Domain.csproj", "{230D736F-B39B-4580-B554-D7415DE6ADBB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,6 +55,10 @@ Global
 		{0EAB5C78-7801-44A3-B906-3A024C566A95}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0EAB5C78-7801-44A3-B906-3A024C566A95}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0EAB5C78-7801-44A3-B906-3A024C566A95}.Release|Any CPU.Build.0 = Release|Any CPU
+		{230D736F-B39B-4580-B554-D7415DE6ADBB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{230D736F-B39B-4580-B554-D7415DE6ADBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{230D736F-B39B-4580-B554-D7415DE6ADBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{230D736F-B39B-4580-B554-D7415DE6ADBB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -64,6 +70,7 @@ Global
 		{07AEF717-1E49-47AF-BB11-E908E20C193B} = {D353F5BE-EE98-4282-863E-4CE259D9A938}
 		{1D74845B-88F9-4CB1-B9BA-80CD1B4B92E7} = {55CADDDC-F3A8-4D82-AEE2-DA8A6CCEC1ED}
 		{0EAB5C78-7801-44A3-B906-3A024C566A95} = {55CADDDC-F3A8-4D82-AEE2-DA8A6CCEC1ED}
+		{230D736F-B39B-4580-B554-D7415DE6ADBB} = {BAE35D79-CAC5-4C50-8739-321E0CFF0FE5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4C9DD769-75CE-437A-86BE-F4A3A9AC43CF}

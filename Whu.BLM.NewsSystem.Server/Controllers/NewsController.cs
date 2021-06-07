@@ -10,6 +10,7 @@ using Whu.BLM.NewsSystem.Shared.Entity.Content;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Whu.BLM.NewsSystem.Server.Domain.VO;
 
 
 namespace Whu.BLM.NewsSystem.Server.Controllers
@@ -24,29 +25,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         {
             NewsSystemContext = newsSystemContext;
         }
-        /// <summary>
-        /// 带有页码的新闻结构体（建立特定新闻与页码的映射关系）。
-        /// </summary>
-        public struct NewsWithPage
-        {
-            public News News { get; set; }
-            public int Page { get; set; }
-        }
-        public class ReleaseModel
-        {
-            public int Id { get; set; }
-            public string Title { get; set; }
-            public string AbstractContent { get; set; }
-            public string OriginalUrl { get; set; }
-            public NewsCategory Category { get; set; }
-        }
-        public class ChangeModel
-        {
-            public int Id { get; set; }
-            public string Title { get; set; }
-            public string Content { get; set; }
-            public NewsCategory Category { get; set; }
-        }
+
         
         /// <summary>
         /// 检索一个新闻中是否存在相应字段。
@@ -65,9 +44,9 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         /// 返回特定搜索字段的含页码的新闻列表。
         /// </summary>
         [HttpGet("search/{searchWord}")]
-        public List<NewsWithPage> ListOfNewsWithPages(string searchWord)
+        public List<NewsApiModel.NewsWithPage> ListOfNewsWithPages(string searchWord)
         {
-            List<NewsWithPage> list = new List<NewsWithPage>();
+            List<NewsApiModel.NewsWithPage> list = new List<NewsApiModel.NewsWithPage>();
             try
             {
                 for (int i = 1; i <= 10; i++)
@@ -75,7 +54,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                     List<News> singleList = Search(searchWord, i);
                     foreach (var news in singleList)
                     {
-                        NewsWithPage newsWithPage = new NewsWithPage();
+                        NewsApiModel.NewsWithPage newsWithPage = new NewsApiModel.NewsWithPage();
                         newsWithPage.News = news;
                         newsWithPage.Page = i;
                         list.Add(newsWithPage);
@@ -85,7 +64,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
             }
             catch
             {
-                return new List<NewsWithPage>();
+                return new List<NewsApiModel.NewsWithPage>();
             }
 
         }
@@ -94,9 +73,9 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         /// 返回指定类别的含页码的新闻列表。
         /// </summary>
         [HttpGet("category/{idOfCategory}")]
-        public List<NewsWithPage> ListOfNewsWithPages(int idOfCategory)
+        public List<NewsApiModel.NewsWithPage> ListOfNewsWithPages(int idOfCategory)
         {
-            List<NewsWithPage> list = new List<NewsWithPage>();
+            List<NewsApiModel.NewsWithPage> list = new List<NewsApiModel.NewsWithPage>();
             try
             {
                 if (NewsSystemContext.NewsCategories.FirstOrDefault(nc => nc.Id == idOfCategory) == null)
@@ -108,7 +87,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                 .Take(10).ToList();
                     foreach (var news in singleList)
                     {
-                        NewsWithPage newsWithPage = new NewsWithPage {News = news, Page = i};
+                        NewsApiModel.NewsWithPage newsWithPage = new NewsApiModel.NewsWithPage {News = news, Page = i};
                         list.Add(newsWithPage);
                     }
                 }
@@ -116,7 +95,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
             }
             catch
             {
-                return new List<NewsWithPage>();
+                return new List<NewsApiModel.NewsWithPage>();
             }
 
         }
@@ -146,7 +125,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         /// </summary>
         [HttpPost("News")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-        public IActionResult ReleaseNews(ReleaseModel mdl)
+        public IActionResult ReleaseNews(NewsApiModel.ReleaseModel mdl)
         {
             try
             {
@@ -178,7 +157,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         /// </summary>
         [HttpPut("News")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-        public IActionResult ChangeNews(ChangeModel mdl)
+        public IActionResult ChangeNews(NewsApiModel.ChangeModel mdl)
         {
             try
             {
@@ -190,7 +169,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                 if(news.NewsCategory != mdl.Category)
                 {
                     news.NewsCategory = mdl.Category;
-                    var categoryInDbSet = NewsSystemContext.NewsCategories.Where(categoryInDBSet => categoryInDBSet.Name == mdl.Category.Name).FirstOrDefault();
+                    var categoryInDbSet = NewsSystemContext.NewsCategories.FirstOrDefault(x => x.Name == mdl.Category.Name);
                     if (categoryInDbSet == null)
                         return NotFound("不存在该类别");
                     categoryInDbSet.News.Add(news);

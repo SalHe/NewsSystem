@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Whu.BLM.NewsSystem.Data\Whu.BLM.NewsSystem.Data.csproj" />
+    <ProjectReference Include="..\Whu.BLM.NewsSystem.Server.Domain\Whu.BLM.NewsSystem.Server.Domain.csproj" />
     <ProjectReference Include="..\Whu.BLM.NewsSystem.Shared\Whu.BLM.NewsSystem.Shared.csproj" />
   </ItemGroup>
 

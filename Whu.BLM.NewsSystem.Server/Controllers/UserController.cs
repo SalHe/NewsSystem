@@ -13,6 +13,7 @@ using Whu.BLM.NewsSystem.Shared.Entity.Content;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Whu.BLM.NewsSystem.Server.Domain.VO;
 
 
 namespace Whu.BLM.NewsSystem.Server.Controllers
@@ -27,19 +28,6 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         {
             NewsSystemContext = newsSystemContext;
         }
-
-        public class UpdateUserInfoModel
-        {
-            public string NewUserName { get; set; }
-            public string NewPassWord { get; set; }
-        }
-
-        public class RegisterModel
-        {
-            public string Name { get; set; }
-            public string Password { get; set; }
-        }
-
 
         /// <summary>
         /// 返回当前用户信息。
@@ -93,7 +81,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         /// </summary>
         [HttpPut("info")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task<IActionResult> ChangeUserInfo(UpdateUserInfoModel mdl)
+        public async Task<IActionResult> ChangeUserInfo(UserApiModel.UpdateUserInfoModel mdl)
         {
             if (JudgeLegality(mdl.NewUserName) == false || JudgeLegality(mdl.NewPassWord) == false ||
                 mdl.NewPassWord.Length < 6)
@@ -111,7 +99,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         /// 用户注册。
         /// </summary>
         [HttpPost("info")]
-        public IActionResult UserRegistration(RegisterModel mdl)
+        public IActionResult UserRegistration(UserApiModel.RegisterModel mdl)
         {
             if (JudgeLegality(mdl.Name) == false || JudgeLegality(mdl.Password) == false || mdl.Password.Length < 6)
                 return BadRequest("字符不合法");
