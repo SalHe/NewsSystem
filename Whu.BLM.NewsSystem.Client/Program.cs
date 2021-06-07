@@ -33,6 +33,8 @@ namespace Whu.BLM.NewsSystem.Client
             });
             builder.Services.AddScoped<INewsCategoryService, NewsCategoryService>();
             builder.Services.AddScoped<INewsService, NewsService>();
+            builder.Services.AddScoped<IAccountService, AccountService>();
+            builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 
             builder.Services.AddAuthorizationCore();
             builder.Services.AddBlazoredLocalStorage();
