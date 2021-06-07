@@ -35,6 +35,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
             _jwtSecurityTokenHandler = jwtSecurityTokenHandler;
         }
 
+        // TODO 调整参数传递方式
         [HttpGet("login")]
         public async Task<IActionResult> Login(string username, string password, string? returnUrl = null)
         {
@@ -59,13 +60,13 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
             }
             catch (UserNotFoundException e)
             {
-                return Problem("找不到用户");
+                return BadRequest("找不到用户");
             }
             catch (PasswordErrorException e)
             {
                 // 虽然可以从信息推断出密码错了
                 // 但是我们还是不明文提示
-                return Problem("用户信息错误");
+                return BadRequest("用户信息错误");
             }
         }
 
@@ -85,10 +86,16 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         [NonAction]
         private async Task<User> ValidateAuthentication(string username, string password)
         {
-            var user = await _newsSystemContext.Users.FirstAsync(u => u.Username.Equals(username));
-            if (user == null) throw new UserNotFoundException();
-            if (!user.Password.Equals(password)) throw new PasswordErrorException();
-            return user;
+            try
+            {
+                var user = await _newsSystemContext.Users.FirstAsync(u => u.Username.Equals(username));
+                if (!user.Password.Equals(password)) throw new PasswordErrorException();
+                return user;
+            }
+            catch (InvalidOperationException e)
+            {
+                throw new UserNotFoundException();
+            }
         }
 
         [HttpGet("info")]
