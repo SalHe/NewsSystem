@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace Whu.BLM.NewsSystem.Server.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/news")]
     public class NewsController : ControllerBase
     {
         public NewsSystemContext NewsSystemContext { get; set; }
@@ -29,24 +29,25 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         /// </summary>
         public struct NewsWithPage
         {
-            public News news;
-            public int page;
+            public News News { get; set; }
+            public int Page { get; set; }
         }
-        public class releaseModel
+        public class ReleaseModel
         {
-            public int id { get; set; }
-            public string title { get; set; }
-            public string abstractcontent { get; set; }
-            public string originalURL { get; set; }
-            public NewsCategory category { get; set; }
+            public int Id { get; set; }
+            public string Title { get; set; }
+            public string AbstractContent { get; set; }
+            public string OriginalUrl { get; set; }
+            public NewsCategory Category { get; set; }
         }
-        public class changeModel
+        public class ChangeModel
         {
-            public int id { get; set; }
-            public string title { get; set; }
-            public string content { get; set; }
-            public NewsCategory category { get; set; }
+            public int Id { get; set; }
+            public string Title { get; set; }
+            public string Content { get; set; }
+            public NewsCategory Category { get; set; }
         }
+        
         /// <summary>
         /// 检索一个新闻中是否存在相应字段。
         /// </summary>
@@ -63,7 +64,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         /// <summary>
         /// 返回特定搜索字段的含页码的新闻列表。
         /// </summary>
-        [HttpGet("BySearchWord/{searchWord}")]
+        [HttpGet("search/{searchWord}")]
         public List<NewsWithPage> ListOfNewsWithPages(string searchWord)
         {
             List<NewsWithPage> list = new List<NewsWithPage>();
@@ -75,8 +76,8 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                     foreach (var news in singleList)
                     {
                         NewsWithPage newsWithPage = new NewsWithPage();
-                        newsWithPage.news = news;
-                        newsWithPage.page = i;
+                        newsWithPage.News = news;
+                        newsWithPage.Page = i;
                         list.Add(newsWithPage);
                     }
                 }
@@ -92,13 +93,13 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         /// <summary>
         /// 返回指定类别的含页码的新闻列表。
         /// </summary>
-        [HttpGet("ByCategory/{idOfCategory}")]
+        [HttpGet("category/{idOfCategory}")]
         public List<NewsWithPage> ListOfNewsWithPages(int idOfCategory)
         {
             List<NewsWithPage> list = new List<NewsWithPage>();
             try
             {
-                if (NewsSystemContext.NewsCategories.Where(nc => nc.Id == idOfCategory).FirstOrDefault() == null)
+                if (NewsSystemContext.NewsCategories.FirstOrDefault(nc => nc.Id == idOfCategory) == null)
                     return list;
                 for (int i = 1; i <= 10; i++)
                 {
@@ -107,9 +108,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                 .Take(10).ToList();
                     foreach (var news in singleList)
                     {
-                        NewsWithPage newsWithPage = new NewsWithPage();
-                        newsWithPage.news = news;
-                        newsWithPage.page = i;
+                        NewsWithPage newsWithPage = new NewsWithPage {News = news, Page = i};
                         list.Add(newsWithPage);
                     }
                 }
@@ -124,13 +123,13 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         /// <summary>
         /// 删除指定新闻ID的新闻。
         /// </summary>
-        [HttpDelete("News/{IdOfNews}")]
+        [HttpDelete("news/{idOfNews}")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-        public IActionResult DeleteNews(int IdOfNews)
+        public IActionResult DeleteNews(int idOfNews)
         {
             try
             {
-                var item = NewsSystemContext.News.Where(news => news.Id == IdOfNews).FirstOrDefault();
+                var item = NewsSystemContext.News.FirstOrDefault(news => news.Id == idOfNews);
                 if (item == null)
                     return NotFound("不存在该新闻");
                 NewsSystemContext.Remove(item);
@@ -147,22 +146,24 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         /// </summary>
         [HttpPost("News")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-        public IActionResult ReleaseNews(releaseModel mdl)
+        public IActionResult ReleaseNews(ReleaseModel mdl)
         {
             try
             {
-                if (NewsSystemContext.News.Where(n => n.Id == mdl.id).FirstOrDefault() != null)
+                if (NewsSystemContext.News.FirstOrDefault(n => n.Id == mdl.Id) != null)
                     return BadRequest("ID已存在");
-                News news = new News();
-                news.Id = mdl.id;
-                news.Title = mdl.title;
-                news.AbstractContent = mdl.abstractcontent;
-                news.OringinUrl = mdl.originalURL;
-                news.NewsCategory = mdl.category;
-                var categoryInDBSet = NewsSystemContext.NewsCategories.Where(categoryInDBSet => categoryInDBSet.Name == mdl.category.Name).FirstOrDefault();
-                if (categoryInDBSet == null)
+                News news = new News
+                {
+                    Id = mdl.Id,
+                    Title = mdl.Title,
+                    AbstractContent = mdl.AbstractContent,
+                    OringinUrl = mdl.OriginalUrl,
+                    NewsCategory = mdl.Category
+                };
+                var categoryInDbSet = NewsSystemContext.NewsCategories.FirstOrDefault(x => x.Name == mdl.Category.Name);
+                if (categoryInDbSet == null)
                     return NotFound("不存在该类别");
-                categoryInDBSet.News.Add(news);
+                categoryInDbSet.News.Add(news);
                 NewsSystemContext.News.Add(news);
                 NewsSystemContext.SaveChanges();
                 return Ok("");
@@ -177,22 +178,22 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         /// </summary>
         [HttpPut("News")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-        public IActionResult ChangeNews(changeModel mdl)
+        public IActionResult ChangeNews(ChangeModel mdl)
         {
             try
             {
-                var news = NewsSystemContext.News.Where(news => news.Id == mdl.id).FirstOrDefault();
+                var news = NewsSystemContext.News.FirstOrDefault(news1 => news1.Id == mdl.Id);
                 if (news == null)
                     return NotFound("不存在该新闻");
-                news.AbstractContent = mdl.content;
-                news.Title = mdl.title;
-                if(news.NewsCategory != mdl.category)
+                news.AbstractContent = mdl.Content;
+                news.Title = mdl.Title;
+                if(news.NewsCategory != mdl.Category)
                 {
-                    news.NewsCategory = mdl.category;
-                    var categoryInDBSet = NewsSystemContext.NewsCategories.Where(categoryInDBSet => categoryInDBSet.Name == mdl.category.Name).FirstOrDefault();
-                    if (categoryInDBSet == null)
+                    news.NewsCategory = mdl.Category;
+                    var categoryInDbSet = NewsSystemContext.NewsCategories.Where(categoryInDBSet => categoryInDBSet.Name == mdl.Category.Name).FirstOrDefault();
+                    if (categoryInDbSet == null)
                         return NotFound("不存在该类别");
-                    categoryInDBSet.News.Add(news);
+                    categoryInDbSet.News.Add(news);
                 }
                 NewsSystemContext.SaveChanges();
                 return Ok("");
