@@ -1,0 +1,14 @@
+﻿@page "/logout"
+@using Whu.BLM.NewsSystem.Client.Services
+@inject IAuthenticationService _authenticationService
+@inject NavigationManager _navigationManager
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        await _authenticationService.Logout();
+        _navigationManager.NavigateTo("/");
+    }
+
+}

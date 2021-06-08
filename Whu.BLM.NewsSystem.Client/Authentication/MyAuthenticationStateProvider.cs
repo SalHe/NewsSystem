@@ -29,9 +29,25 @@ namespace Whu.BLM.NewsSystem.Client.Authentication
 
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            // TODO 将TOKEN更新到认证状态中去 不然会被认为是匿名用户(未认证)
+            return AuthenticationStateFromJwt(token);
+        }
+
+        private static AuthenticationState AuthenticationStateFromJwt(string token)
+        {
+            // TODO 将jwt中包含的其他信息取出来
             return new AuthenticationState(
                 new ClaimsPrincipal(new ClaimsIdentity(new Claim[] {new Claim("user", "?")}, "jwt")));
+        }
+
+        public void NotifyLogout()
+        {
+            var anonymousUser = new ClaimsPrincipal(new ClaimsIdentity());
+            NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(anonymousUser)));
+        }
+
+        public void NotifyLogin(string token)
+        {
+            NotifyAuthenticationStateChanged(Task.FromResult(AuthenticationStateFromJwt(token)));
         }
     }
 }
