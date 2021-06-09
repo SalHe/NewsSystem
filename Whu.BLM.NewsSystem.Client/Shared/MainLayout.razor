@@ -21,14 +21,14 @@
         <Row Gutter="16">
             <AntDesign.Col Span="4">
                 <a href="/">
-                    <Avatar Src="favicon.ico" Style="display: inline-block; margin-right: 10px;" />
+                    <Avatar Src="favicon.ico" Style="display: inline-block; margin-right: 10px;"/>
                     <Text>BLM News</Text>
                 </a>
             </AntDesign.Col>
             <AntDesign.Col Span="14">
                 <AntDesign.Input Placeholder="搜索新闻" Size="@InputSize.Large" @bind-Value="QueryText">
                     <Prefix>
-                        <Icon Type="search" Theme="outline" />
+                        <Icon Type="search" Theme="outline"/>
                     </Prefix>
                 </AntDesign.Input>
             </AntDesign.Col>
@@ -36,21 +36,33 @@
                 <Menu Mode=MenuMode.Horizontal>
                     <MenuItem Key="home">
                         <MenuLink Href="/">
-                            <Icon Type="home" Theme="outline" />
+                            <Icon Type="home" Theme="outline"/>
                             首页
                         </MenuLink>
                     </MenuItem>
-                    <MenuItem Key="Login">
-                        <MenuLink Href="/login">
-                            <Icon Type="login" Theme="outline" />
-                            登录
-                        </MenuLink>
-                    </MenuItem>
-                    <MenuItem Key="register">
-                        <MenuLink Href="/register">
-                            注册
-                        </MenuLink>
-                    </MenuItem>
+                    <AuthorizeView>
+                        <Authorized>
+                            <MenuItem Key="Logout">
+                                <MenuLink Href="/logout">
+                                    <Icon Type="logout" Theme="outline"/>
+                                    登出
+                                </MenuLink>
+                            </MenuItem>
+                        </Authorized>
+                        <NotAuthorized>
+                            <MenuItem Key="Login">
+                                <MenuLink Href="/login">
+                                    <Icon Type="login" Theme="outline"/>
+                                    登录
+                                </MenuLink>
+                            </MenuItem>
+                            <MenuItem Key="register">
+                                <MenuLink Href="/register">
+                                    注册
+                                </MenuLink>
+                            </MenuItem>
+                        </NotAuthorized>
+                    </AuthorizeView>
                 </Menu>
             </AntDesign.Col>
         </Row>
@@ -64,7 +76,7 @@
             </AntDesign.Col>
         </Row>
     </Content>
-    <BackTop />
+    <BackTop/>
 
     <!-- 底部区 -->
     <Footer>
@@ -108,5 +120,8 @@
 @code{
 
     public string QueryText { get; set; }
+
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationState { get; set; }
 
 }
