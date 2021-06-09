@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Whu.BLM.NewsSystem.Data\Whu.BLM.NewsSystem.Data.csproj" />
     <ProjectReference Include="..\Whu.BLM.NewsSystem.Shared\Whu.BLM.NewsSystem.Shared.csproj" />
   </ItemGroup>
 
