@@ -88,7 +88,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         {
             var user = await _newsSystemContext.Users.FirstAsync(u => u.Username.Equals(username));
             if (user == null) throw new UserNotFoundException();
-            if (!user.Password.Equals(password)) throw new PasswordErrorException();
+            if (!user.Password.Equals(UserController.MD5(password))) throw new PasswordErrorException();
             return user;
         }
 
