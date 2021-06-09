@@ -22,7 +22,6 @@ namespace Whu.BLM.NewsSystem.Client.Services.Impl
                 return await response.Content.ReadAsStringAsync();
             }
 
-            // TODO 给出错误信息
             throw new LoginErrorException(await response.Content.ReadAsStringAsync());
         }
     }
