@@ -30,8 +30,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         /// <summary>
         /// 检索一个新闻中是否存在相应字段。
         /// </summary>
-        [NonAction]
-        public List<News> Search(string searchWord, int numOfPage)
+        private List<News> Search(string searchWord, int numOfPage)
         {
             var page = NewsSystemContext.News.Where(news => news.Title.Contains(searchWord))
                 .Skip(10 * numOfPage)
