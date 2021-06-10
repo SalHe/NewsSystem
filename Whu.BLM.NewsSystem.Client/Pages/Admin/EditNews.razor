@@ -3,9 +3,11 @@
 @using Whu.BLM.NewsSystem.Client.Services
 @using Whu.BLM.NewsSystem.Shared.Entity.Content
 @using System.ComponentModel.DataAnnotations
+@using Whu.BLM.NewsSystem.Shared.Entity.Identity
 @inject MessageService _message
 @inject INewsCategoryService _newsCategoryService
 @inject INewsService _newsService
+@inject NavigationManager _navigationManager
 
 <Form Model="@News"
       LabelColSpan="4"
@@ -35,6 +37,9 @@
 
 @code {
 
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationState { get; set; }
+
     [Parameter]
     public int? NewsId { get; set; }
 
@@ -62,6 +67,12 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (!(await AuthenticationState).User.IsInRole(UserGroup.Admin.ToString()))
+        {
+    // 没有权限访问编辑和添加，所以导航至首页
+            await _message.Error("您无权访问本页面！");
+            _navigationManager.NavigateTo("/");
+        }
         NewsCategories = await _newsCategoryService.GetNewsCategoriesAsync();
     }
 
