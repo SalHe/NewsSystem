@@ -27,7 +27,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
             _newsSystemContext = newsSystemContext;
         }
 
-        
+
         /// <summary>
         /// 检索一个新闻中是否存在相应字段。
         /// </summary>
@@ -37,7 +37,6 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                 .Skip(10 * numOfPage)
                 .Take(10).ToList();
             return page;
-            
         }
 
         /// <summary>
@@ -60,15 +59,15 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                         list.Add(newsWithPage);
                     }
                 }
+
                 return list;
             }
             catch
             {
                 return new List<NewsApiModel.NewsWithPage>();
             }
-
         }
-        
+
         /// <summary>
         /// 删除指定新闻ID的新闻。
         /// </summary>
@@ -87,10 +86,10 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
             }
             catch
             {
-                return BadRequest("未知错误" );
+                return BadRequest("未知错误");
             }
         }
-        
+
         /// <summary>
         /// 发布新闻。
         /// </summary>
@@ -110,7 +109,8 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                     OringinUrl = mdl.OriginalUrl,
                     NewsCategory = mdl.Category
                 };
-                var categoryInDbSet = _newsSystemContext.NewsCategories.FirstOrDefault(x => x.Name == mdl.Category.Name);
+                var categoryInDbSet =
+                    _newsSystemContext.NewsCategories.FirstOrDefault(x => x.Name == mdl.Category.Name);
                 if (categoryInDbSet == null)
                     return NotFound("不存在该类别");
                 categoryInDbSet.News.Add(news);
@@ -123,7 +123,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                 return BadRequest("未知错误");
             }
         }
-        
+
         /// <summary>
         /// 调整新闻。
         /// </summary>
@@ -138,14 +138,16 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                     return NotFound("不存在该新闻");
                 news.AbstractContent = mdl.Content;
                 news.Title = mdl.Title;
-                if(news.NewsCategory != mdl.Category)
+                if (news.NewsCategory != mdl.Category)
                 {
                     news.NewsCategory = mdl.Category;
-                    var categoryInDbSet = _newsSystemContext.NewsCategories.FirstOrDefault(x => x.Name == mdl.Category.Name);
+                    var categoryInDbSet =
+                        _newsSystemContext.NewsCategories.FirstOrDefault(x => x.Name == mdl.Category.Name);
                     if (categoryInDbSet == null)
                         return NotFound("不存在该类别");
                     categoryInDbSet.News.Add(news);
                 }
+
                 _newsSystemContext.SaveChanges();
                 return Ok("");
             }
@@ -169,6 +171,17 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
 
             return NotFound("找不到对应新闻");
         }
-        
+
+        /// <summary>
+        /// 无分类获取按页获取新闻列表。
+        /// </summary>
+        /// <param name="page">新闻页码</param>
+        /// <param name="size">每页数量</param>
+        /// <returns></returns>
+        [HttpGet("{page}/{size}")]
+        public async Task<ActionResult<IList<News>>> GetNewsList(int page, int size)
+        {
+            return await _newsSystemContext.News.Skip((page - 1) * size).Take(size).ToListAsync();
+        }
     }
 }
