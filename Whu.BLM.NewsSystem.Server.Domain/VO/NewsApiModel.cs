@@ -12,6 +12,11 @@ namespace Whu.BLM.NewsSystem.Server.Domain.VO
             public News News { get; set; }
             public int Page { get; set; }
         }
+        public struct CategoryWithoutNews
+        {
+            public int id { get; set; }
+            public string name { get; set; }
+        }
 
         public class ReleaseModel
         {

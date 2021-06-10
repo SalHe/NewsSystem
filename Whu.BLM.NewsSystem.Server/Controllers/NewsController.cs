@@ -99,6 +99,36 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
             }
 
         }
+
+        /// <summary>
+        /// 返回所有的新闻类别。
+        /// </summary>
+        [HttpGet("category")]
+        public List<NewsApiModel.CategoryWithoutNews> GetAllCategory()
+        {
+            try
+            {
+                List<NewsCategory> listWithNews = NewsSystemContext.NewsCategories.ToList();
+                List<NewsApiModel.CategoryWithoutNews> listWithoutNews = new List<NewsApiModel.CategoryWithoutNews>();
+                if(listWithNews != null)
+                {
+                    foreach (var category in listWithNews)
+                    {
+                        var item = new NewsApiModel.CategoryWithoutNews();
+                        item.id = category.Id;
+                        item.name = category.Name;
+                        listWithoutNews.Add(item);
+                    }
+                    return listWithoutNews;
+                }
+                else 
+                    return new List<NewsApiModel.CategoryWithoutNews>();
+            }
+            catch
+            {
+                return new List<NewsApiModel.CategoryWithoutNews>();
+            }
+        }
         /// <summary>
         /// 删除指定新闻ID的新闻。
         /// </summary>
