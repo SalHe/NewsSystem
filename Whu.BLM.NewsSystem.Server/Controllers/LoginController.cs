@@ -86,16 +86,10 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         [NonAction]
         private async Task<User> ValidateAuthentication(string username, string password)
         {
-            try
-            {
-                var user = await _newsSystemContext.Users.FirstAsync(u => u.Username.Equals(username));
-                if (!user.Password.Equals(password)) throw new PasswordErrorException();
-                return user;
-            }
-            catch (InvalidOperationException e)
-            {
-                throw new UserNotFoundException();
-            }
+            var user = await _newsSystemContext.Users.FirstAsync(u => u.Username.Equals(username));
+            if (user == null) throw new UserNotFoundException();
+            if (!user.Password.Equals(UserController.MD5(password))) throw new PasswordErrorException();
+            return user;
         }
 
         [HttpGet("info")]

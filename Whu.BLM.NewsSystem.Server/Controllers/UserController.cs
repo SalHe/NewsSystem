@@ -101,18 +101,21 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         [HttpPost("info")]
         public IActionResult UserRegistration(UserApiModel.RegisterModel mdl)
         {
-            if (JudgeLegality(mdl.Name) == false || JudgeLegality(mdl.Password) == false || mdl.Password.Length < 6)
-                return BadRequest("字符不合法");
-            if (NewsSystemContext.Users.Count() > 65535)
-                return Forbid("用户已满");
-            User newUser = new User {Username = mdl.Name, Password = MD5(mdl.Password)};
-            int newid = new Random((int) DateTime.Now.Ticks).Next(0, 65535);
+            if (JudgeLegality(mdl.Name) == false)
+                return BadRequest("用户名字符不合法，只支持数字+字母");
+            else if (JudgeLegality(mdl.Password) == false)
+                return BadRequest("密码字符不合法，只支持数字+字母");
+            else if (mdl.Password.Length < 6)
+                return BadRequest("密码长度应大于六位");
+                User newUser = new User {Username = mdl.Name, Password = MD5(mdl.Password)};
+            /*int newid = new Random((int) DateTime.Now.Ticks).Next(0, 65535);
             while (NewsSystemContext.Users.Where(u => u.Id == newid).ToList().Count > 0)
             {
                 newid = new Random((int) DateTime.Now.Ticks).Next(0, 65535);
             }
 
-            newUser.Id = newid;
+            newUser.Id = newid;*/
+            newUser.UserGroup = UserGroup.User;
             NewsSystemContext.Users.Add(newUser);
             NewsSystemContext.SaveChanges();
             return Ok("");
@@ -176,7 +179,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         /// 对用户密码进行MD5加密
         /// </summary>
         [NonAction]
-        private static string MD5(string text)
+        public static string MD5(string text)
         {
             byte[] buffer = System.Text.Encoding.Default.GetBytes(text);
             var check = new MD5CryptoServiceProvider();
