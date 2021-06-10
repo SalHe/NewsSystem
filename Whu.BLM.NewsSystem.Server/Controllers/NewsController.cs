@@ -67,67 +67,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
             }
 
         }
-
-        /// <summary>
-        /// 返回指定类别的含页码的新闻列表。
-        /// </summary>
-        [HttpGet("category/{idOfCategory}")]
-        public List<NewsApiModel.NewsWithPage> ListOfNewsWithPages(int idOfCategory)
-        {
-            List<NewsApiModel.NewsWithPage> list = new List<NewsApiModel.NewsWithPage>();
-            try
-            {
-                if (NewsSystemContext.NewsCategories.FirstOrDefault(nc => nc.Id == idOfCategory) == null)
-                    return list;
-                for (int i = 1; i <= 10; i++)
-                {
-                    List<News> singleList = NewsSystemContext.News.Where(news => news.NewsCategory.Id == idOfCategory)
-                .Skip(10 * i)
-                .Take(10).ToList();
-                    foreach (var news in singleList)
-                    {
-                        NewsApiModel.NewsWithPage newsWithPage = new NewsApiModel.NewsWithPage {News = news, Page = i};
-                        list.Add(newsWithPage);
-                    }
-                }
-                return list;
-            }
-            catch
-            {
-                return new List<NewsApiModel.NewsWithPage>();
-            }
-
-        }
-
-        /// <summary>
-        /// 返回所有的新闻类别。
-        /// </summary>
-        [HttpGet("category")]
-        public List<NewsApiModel.CategoryWithoutNews> GetAllCategory()
-        {
-            try
-            {
-                List<NewsCategory> listWithNews = NewsSystemContext.NewsCategories.ToList();
-                List<NewsApiModel.CategoryWithoutNews> listWithoutNews = new List<NewsApiModel.CategoryWithoutNews>();
-                if(listWithNews != null)
-                {
-                    foreach (var category in listWithNews)
-                    {
-                        var item = new NewsApiModel.CategoryWithoutNews();
-                        item.id = category.Id;
-                        item.name = category.Name;
-                        listWithoutNews.Add(item);
-                    }
-                    return listWithoutNews;
-                }
-                else 
-                    return new List<NewsApiModel.CategoryWithoutNews>();
-            }
-            catch
-            {
-                return new List<NewsApiModel.CategoryWithoutNews>();
-            }
-        }
+        
         /// <summary>
         /// 删除指定新闻ID的新闻。
         /// </summary>
@@ -149,6 +89,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                 return BadRequest("未知错误" );
             }
         }
+        
         /// <summary>
         /// 发布新闻。
         /// </summary>
@@ -181,6 +122,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                 return BadRequest("未知错误");
             }
         }
+        
         /// <summary>
         /// 调整新闻。
         /// </summary>
@@ -211,5 +153,6 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                 return BadRequest("未知错误");
             }
         }
+        
     }
 }
