@@ -23,7 +23,6 @@
 
 <AntList DataSource="@News" ItemLayout="@ListItemLayout.Vertical">
     <ChildContent>
-        <!-- TODO 当不是管理员时，不显示 editAction -->
         <ListItem Actions="@CreateNewsActions(context)">
             <ListItemMeta Description="@context.AbstractContent">
                 <TitleTemplate>
@@ -36,6 +35,9 @@
 
 @code {
 
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationState { get; set; }
+
     [Parameter]
     public int? CategoryId { get; set; }
 
@@ -44,9 +46,13 @@
 
     private RenderFragment[] CreateNewsActions(News news)
     {
-        RenderFragment editAction = @<a href="/news/edit/@news.Id">编辑</a>;
-        RenderFragment deleteAction = @<Button Type="@ButtonType.Link" Danger>删除</Button>;
-        return new[] {editAction, deleteAction};
+        if (AuthenticationState.Result.User.IsInRole("Admin"))
+        {
+            RenderFragment editAction = @<a href="/news/edit/@news.Id">编辑</a>;
+            RenderFragment deleteAction = @<Button Type="@ButtonType.Link" Danger>删除</Button>;
+            return new[] {editAction, deleteAction};
+        }
+        return new RenderFragment[] {};
     }
 
     protected override async Task OnInitializedAsync()
