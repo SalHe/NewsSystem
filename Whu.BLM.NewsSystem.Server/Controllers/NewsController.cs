@@ -71,7 +71,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         /// <summary>
         /// 删除指定新闻ID的新闻。
         /// </summary>
-        [HttpDelete("news/{idOfNews}")]
+        [HttpDelete("{idOfNews}")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public IActionResult DeleteNews(int idOfNews)
         {
@@ -93,7 +93,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         /// <summary>
         /// 发布新闻。
         /// </summary>
-        [HttpPost("News")]
+        [HttpPost]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public IActionResult ReleaseNews(NewsApiModel.ReleaseModel mdl)
         {
@@ -126,7 +126,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         /// <summary>
         /// 调整新闻。
         /// </summary>
-        [HttpPut("News")]
+        [HttpPut]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public IActionResult ChangeNews(NewsApiModel.ChangeModel mdl)
         {
