@@ -1,6 +1,10 @@
 ﻿@page "/register"
 @using System.ComponentModel.DataAnnotations
+@using Whu.BLM.NewsSystem.Client.Exceptions
+@using Whu.BLM.NewsSystem.Client.Services
 @inject MessageService _message
+@inject IAccountService _accountService
+@inject NavigationManager _navigationManager
 
 <div style="display: flex; justify-content: center">
     <div style="display: flex; flex-direction: column; justify-content: center; width: 450px; align-items: center;">
@@ -14,7 +18,7 @@
                 <AntDesign.Input @bind-Value="@context.Username" Placeholder="请输入用户名" />
             </FormItem>
             <FormItem Label="邮箱">
-                <AntDesign.Input @bind-Value="@context.Email" Placeholder="请输入用户名" />
+                <AntDesign.Input @bind-Value="@context.Email" Placeholder="请输入邮箱" />
             </FormItem>
             <FormItem Label="密码">
                 <InputPassword @bind-Value="@context.Password" Placeholder="请输入密码" />
@@ -30,7 +34,6 @@
                     <Button Type="@ButtonType.Link" Block>已有账号？登录</Button>
                 </a>
             </FormItem>
-            <!-- TODO 对接注册 -->
         </Form>
     </div>
 </div>
@@ -44,7 +47,7 @@
 
 @code {
 
-    public class LoginModel
+    public class RegisterModel
     {
         [Required(ErrorMessage = "请输入您的用户名")]
         [MinLength(5, ErrorMessage = "用户名不得少于5位字符")]
@@ -65,11 +68,20 @@
         public string PasswordAgain { get; set; }
     }
 
-    public LoginModel Model { get; set; } = new LoginModel();
+    public RegisterModel Model { get; set; } = new RegisterModel();
 
     public async Task OnRegister(EditContext editContext)
     {
-        _message.Info($"{Model.Username} {Model.Password}");
+        try
+        {
+            await _accountService.Register(Model.Username, Model.Password, Model.Email);
+            await _message.Info("注册成功，为您转到注册界面...");
+            _navigationManager.NavigateTo("/login");
+        }
+        catch (RegisterException e)
+        {
+            await _message.Error($"注册失败：{e.Message}");
+        }
     }
 
 
