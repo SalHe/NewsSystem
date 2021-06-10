@@ -10,6 +10,7 @@ using Whu.BLM.NewsSystem.Shared.Entity.Content;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using Whu.BLM.NewsSystem.Server.Domain.VO;
 
 
@@ -19,24 +20,23 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
     [Route("api/news")]
     public class NewsController : ControllerBase
     {
-        public NewsSystemContext NewsSystemContext { get; set; }
+        private readonly NewsSystemContext _newsSystemContext;
 
         public NewsController(NewsSystemContext newsSystemContext)
         {
-            NewsSystemContext = newsSystemContext;
+            _newsSystemContext = newsSystemContext;
         }
 
-        
+
         /// <summary>
         /// 检索一个新闻中是否存在相应字段。
         /// </summary>
         private List<News> Search(string searchWord, int numOfPage)
         {
-            var page = NewsSystemContext.News.Where(news => news.Title.Contains(searchWord))
+            var page = _newsSystemContext.News.Where(news => news.Title.Contains(searchWord))
                 .Skip(10 * numOfPage)
                 .Take(10).ToList();
             return page;
-            
         }
 
         /// <summary>
@@ -59,15 +59,15 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                         list.Add(newsWithPage);
                     }
                 }
+
                 return list;
             }
             catch
             {
                 return new List<NewsApiModel.NewsWithPage>();
             }
-
         }
-        
+
         /// <summary>
         /// 删除指定新闻ID的新闻。
         /// </summary>
@@ -77,19 +77,19 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         {
             try
             {
-                var item = NewsSystemContext.News.FirstOrDefault(news => news.Id == idOfNews);
+                var item = _newsSystemContext.News.FirstOrDefault(news => news.Id == idOfNews);
                 if (item == null)
                     return NotFound("不存在该新闻");
-                NewsSystemContext.Remove(item);
-                NewsSystemContext.SaveChanges();
+                _newsSystemContext.Remove(item);
+                _newsSystemContext.SaveChanges();
                 return Ok("");
             }
             catch
             {
-                return BadRequest("未知错误" );
+                return BadRequest("未知错误");
             }
         }
-        
+
         /// <summary>
         /// 发布新闻。
         /// </summary>
@@ -99,7 +99,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         {
             try
             {
-                if (NewsSystemContext.News.FirstOrDefault(n => n.Id == mdl.Id) != null)
+                if (_newsSystemContext.News.FirstOrDefault(n => n.Id == mdl.Id) != null)
                     return BadRequest("ID已存在");
                 News news = new News
                 {
@@ -109,12 +109,13 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                     OringinUrl = mdl.OriginalUrl,
                     NewsCategory = mdl.Category
                 };
-                var categoryInDbSet = NewsSystemContext.NewsCategories.FirstOrDefault(x => x.Name == mdl.Category.Name);
+                var categoryInDbSet =
+                    _newsSystemContext.NewsCategories.FirstOrDefault(x => x.Name == mdl.Category.Name);
                 if (categoryInDbSet == null)
                     return NotFound("不存在该类别");
                 categoryInDbSet.News.Add(news);
-                NewsSystemContext.News.Add(news);
-                NewsSystemContext.SaveChanges();
+                _newsSystemContext.News.Add(news);
+                _newsSystemContext.SaveChanges();
                 return Ok("");
             }
             catch
@@ -122,7 +123,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                 return BadRequest("未知错误");
             }
         }
-        
+
         /// <summary>
         /// 调整新闻。
         /// </summary>
@@ -132,20 +133,22 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         {
             try
             {
-                var news = NewsSystemContext.News.FirstOrDefault(news1 => news1.Id == mdl.Id);
+                var news = _newsSystemContext.News.FirstOrDefault(news1 => news1.Id == mdl.Id);
                 if (news == null)
                     return NotFound("不存在该新闻");
                 news.AbstractContent = mdl.Content;
                 news.Title = mdl.Title;
-                if(news.NewsCategory != mdl.Category)
+                if (news.NewsCategory != mdl.Category)
                 {
                     news.NewsCategory = mdl.Category;
-                    var categoryInDbSet = NewsSystemContext.NewsCategories.FirstOrDefault(x => x.Name == mdl.Category.Name);
+                    var categoryInDbSet =
+                        _newsSystemContext.NewsCategories.FirstOrDefault(x => x.Name == mdl.Category.Name);
                     if (categoryInDbSet == null)
                         return NotFound("不存在该类别");
                     categoryInDbSet.News.Add(news);
                 }
-                NewsSystemContext.SaveChanges();
+
+                _newsSystemContext.SaveChanges();
                 return Ok("");
             }
             catch
@@ -153,6 +156,32 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                 return BadRequest("未知错误");
             }
         }
-        
+
+        /// <summary>
+        /// 根据指定新闻ID查找新闻
+        /// </summary>
+        /// <param name="id">新闻ID</param>
+        /// <returns></returns>
+        [HttpGet("{id}")]
+        public async Task<ActionResult<News>> GetNewsById(int id)
+        {
+            var newsFound = await _newsSystemContext.News.FirstOrDefaultAsync(x => x.Id == id);
+            if (newsFound != null)
+                return newsFound;
+
+            return NotFound("找不到对应新闻");
+        }
+
+        /// <summary>
+        /// 无分类获取按页获取新闻列表。
+        /// </summary>
+        /// <param name="page">新闻页码</param>
+        /// <param name="size">每页数量</param>
+        /// <returns></returns>
+        [HttpGet("{page}/{size}")]
+        public async Task<ActionResult<IList<News>>> GetNewsList(int page, int size)
+        {
+            return await _newsSystemContext.News.Skip((page - 1) * size).Take(size).ToListAsync();
+        }
     }
 }
