@@ -101,18 +101,18 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
             {
                 if (_newsSystemContext.News.FirstOrDefault(n => n.Id == mdl.Id) != null)
                     return BadRequest("ID已存在");
+                var categoryInDbSet =
+                    _newsSystemContext.NewsCategories.FirstOrDefault(x => x.Id == mdl.Category);
+                if (categoryInDbSet == null)
+                    return NotFound("不存在该类别");
                 News news = new News
                 {
                     Id = mdl.Id,
                     Title = mdl.Title,
                     AbstractContent = mdl.AbstractContent,
                     OringinUrl = mdl.OriginalUrl,
-                    NewsCategory = mdl.Category
+                    NewsCategory = categoryInDbSet
                 };
-                var categoryInDbSet =
-                    _newsSystemContext.NewsCategories.FirstOrDefault(x => x.Name == mdl.Category.Name);
-                if (categoryInDbSet == null)
-                    return NotFound("不存在该类别");
                 categoryInDbSet.News.Add(news);
                 _newsSystemContext.News.Add(news);
                 _newsSystemContext.SaveChanges();

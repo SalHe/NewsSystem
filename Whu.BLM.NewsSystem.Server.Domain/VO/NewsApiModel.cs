@@ -24,7 +24,7 @@ namespace Whu.BLM.NewsSystem.Server.Domain.VO
             public string Title { get; set; }
             public string AbstractContent { get; set; }
             public string OriginalUrl { get; set; }
-            public NewsCategory Category { get; set; }
+            public int Category { get; set; }
         }
 
         public class ChangeModel
