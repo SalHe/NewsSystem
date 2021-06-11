@@ -95,7 +95,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         /// </summary>
         [HttpPost]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-        public IActionResult ReleaseNews(NewsApiModel.ReleaseModel mdl)
+        public ActionResult<News> ReleaseNews(NewsApiModel.ReleaseModel mdl)
         {
             // if (_newsSystemContext.News.FirstOrDefault(n => n.Id == mdl.Id) != null)
             //     return BadRequest("ID已存在");
@@ -110,10 +110,10 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                 OringinUrl = mdl.OriginalUrl,
                 NewsCategory = categoryInDbSet
             };
-            categoryInDbSet.News.Add(news);
-            _newsSystemContext.News.Add(news);
+            news = _newsSystemContext.News.Add(news).Entity;
             _newsSystemContext.SaveChanges();
-            return Ok("新闻添加成功");
+            news.NewsCategory.News = null;
+            return news;
         }
 
         /// <summary>
