@@ -19,8 +19,6 @@ namespace Whu.BLM.NewsSystem.Client.Services.Impl
             _httpClient = httpClient;
         }
 
-        public IList<NewsCategory> CachedNewsCategories { get; set; }
-
         public async Task<News> GetNewsById(int id)
         {
             try

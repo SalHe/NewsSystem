@@ -59,9 +59,6 @@
     protected override async Task OnInitializedAsync()
     {
         NewsCategories = await _newsCategoryService.GetNewsCategoriesAsync();
-        // TODO 即将移除该测试数据
-    // 这里先这样写，主要是先把新闻分类服务完成
-        ((NewsService) _newsService).CachedNewsCategories = NewsCategories;
     }
 
     protected override async Task OnParametersSetAsync()
