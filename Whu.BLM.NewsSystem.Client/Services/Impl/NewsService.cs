@@ -21,23 +21,6 @@ namespace Whu.BLM.NewsSystem.Client.Services.Impl
 
         public IList<NewsCategory> CachedNewsCategories { get; set; }
 
-        private News GenerateNews(int id, int? categoryId = null)
-        {
-            Random random = new Random();
-            var category = categoryId == null
-                ? CachedNewsCategories[random.Next(0, CachedNewsCategories.Count)]
-                : CachedNewsCategories.FirstOrDefault(x =>
-                    x.Id == categoryId);
-            return new News
-            {
-                Id = id,
-                Title = $"News {id}",
-                NewsCategory = category,
-                OringinUrl = $"https://www.baidu.com/s?wd=news{id}",
-                AbstractContent = $"Content{id}"
-            };
-        }
-
         public async Task<News> GetNewsById(int id)
         {
             try
