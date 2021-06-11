@@ -97,31 +97,23 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public IActionResult ReleaseNews(NewsApiModel.ReleaseModel mdl)
         {
-            try
+            // if (_newsSystemContext.News.FirstOrDefault(n => n.Id == mdl.Id) != null)
+            //     return BadRequest("ID已存在");
+            var categoryInDbSet =
+                _newsSystemContext.NewsCategories.FirstOrDefault(x => x.Id == mdl.Category);
+            if (categoryInDbSet == null)
+                return NotFound("不存在该类别");
+            News news = new News
             {
-                if (_newsSystemContext.News.FirstOrDefault(n => n.Id == mdl.Id) != null)
-                    return BadRequest("ID已存在");
-                var categoryInDbSet =
-                    _newsSystemContext.NewsCategories.FirstOrDefault(x => x.Id == mdl.Category);
-                if (categoryInDbSet == null)
-                    return NotFound("不存在该类别");
-                News news = new News
-                {
-                    Id = mdl.Id,
-                    Title = mdl.Title,
-                    AbstractContent = mdl.AbstractContent,
-                    OringinUrl = mdl.OriginalUrl,
-                    NewsCategory = categoryInDbSet
-                };
-                categoryInDbSet.News.Add(news);
-                _newsSystemContext.News.Add(news);
-                _newsSystemContext.SaveChanges();
-                return Ok("");
-            }
-            catch
-            {
-                return BadRequest("未知错误");
-            }
+                Title = mdl.Title,
+                AbstractContent = mdl.AbstractContent,
+                OringinUrl = mdl.OriginalUrl,
+                NewsCategory = categoryInDbSet
+            };
+            categoryInDbSet.News.Add(news);
+            _newsSystemContext.News.Add(news);
+            _newsSystemContext.SaveChanges();
+            return Ok("新闻添加成功");
         }
 
         /// <summary>
@@ -198,7 +190,7 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
             result.ForEach(x => x.NewsCategory.News = null);
             return result;
         }
-        
+
         /// <summary>
         /// 返回指定类别的含页码的新闻列表。
         /// </summary>
