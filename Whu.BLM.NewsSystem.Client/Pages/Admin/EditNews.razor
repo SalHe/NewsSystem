@@ -3,6 +3,7 @@
 @using Whu.BLM.NewsSystem.Client.Services
 @using Whu.BLM.NewsSystem.Shared.Entity.Content
 @using System.ComponentModel.DataAnnotations
+@using Whu.BLM.NewsSystem.Client.Exceptions
 @using Whu.BLM.NewsSystem.Shared.Entity.Identity
 @inject MessageService _message
 @inject INewsCategoryService _newsCategoryService
@@ -19,7 +20,7 @@
     <FormItem Label="URL">
         <Input @bind-Value="@context.OriginUrl"/>
     </FormItem>
-    <FormItem Label="类别：">
+    <FormItem Label="类别">
         <Select Mode="default"
                 DataSource="@NewsCategories"
                 LabelName="@nameof(NewsCategory.Name)"
@@ -78,9 +79,9 @@
 
     protected override async Task OnParametersSetAsync()
     {
-    // TODO 获取新闻信息
         if (NewsId == null)
         {
+            // 认为是新增新闻
             News = new NewsModel()
             {
                 Title = string.Empty,
@@ -91,14 +92,23 @@
         }
         else
         {
-            var news = await _newsService.GetNewsById(NewsId ?? 0);
-            News = new NewsModel()
+            // 编辑指定的新闻
+            try
             {
-                Title = news.Title,
-                OriginUrl = news.OringinUrl,
-                AbstractContent = news.AbstractContent,
-                NewsCategory = news.NewsCategory.Id
-            };
+                var news = await _newsService.GetNewsById((int) NewsId);
+                News = new NewsModel()
+                {
+                    Title = news.Title,
+                    OriginUrl = news.OringinUrl,
+                    AbstractContent = news.AbstractContent,
+                    NewsCategory = news.NewsCategory.Id
+                };
+            }
+            catch (NewsNotFoundException e)
+            {
+                await _message.Error(e.Message);
+                _navigationManager.NavigateTo("/");
+            }
         }
     }
 
