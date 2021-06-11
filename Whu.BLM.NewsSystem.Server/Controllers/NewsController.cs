@@ -10,6 +10,7 @@ using Whu.BLM.NewsSystem.Shared.Entity.Content;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using Whu.BLM.NewsSystem.Server.Domain.VO;
 
 
@@ -19,25 +20,23 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
     [Route("api/news")]
     public class NewsController : ControllerBase
     {
-        public NewsSystemContext NewsSystemContext { get; set; }
+        private readonly NewsSystemContext _newsSystemContext;
 
         public NewsController(NewsSystemContext newsSystemContext)
         {
-            NewsSystemContext = newsSystemContext;
+            _newsSystemContext = newsSystemContext;
         }
 
-        
+
         /// <summary>
         /// 检索一个新闻中是否存在相应字段。
         /// </summary>
-        [NonAction]
-        public List<News> Search(string searchWord, int numOfPage)
+        private List<News> Search(string searchWord, int numOfPage)
         {
-            var page = NewsSystemContext.News.Where(news => news.Title.Contains(searchWord))
+            var page = _newsSystemContext.News.Where(news => news.Title.Contains(searchWord))
                 .Skip(10 * numOfPage)
                 .Take(10).ToList();
             return page;
-            
         }
 
         /// <summary>
@@ -60,121 +59,29 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                         list.Add(newsWithPage);
                     }
                 }
+
                 return list;
             }
             catch
             {
                 return new List<NewsApiModel.NewsWithPage>();
             }
-
         }
 
-        /// <summary>
-        /// 返回指定类别的含页码的新闻列表。
-        /// </summary>
-        [HttpGet("category/{idOfCategory}")]
-        public List<NewsApiModel.NewsWithPage> ListOfNewsWithPages(int idOfCategory)
-        {
-            List<NewsApiModel.NewsWithPage> list = new List<NewsApiModel.NewsWithPage>();
-            try
-            {
-                if (NewsSystemContext.NewsCategories.FirstOrDefault(nc => nc.Id == idOfCategory) == null)
-                    return list;
-                for (int i = 1; i <= 10; i++)
-                {
-                    List<News> singleList = NewsSystemContext.News.Where(news => news.NewsCategory.Id == idOfCategory)
-                .Skip(10 * i)
-                .Take(10).ToList();
-                    foreach (var news in singleList)
-                    {
-                        NewsApiModel.NewsWithPage newsWithPage = new NewsApiModel.NewsWithPage {News = news, Page = i};
-                        list.Add(newsWithPage);
-                    }
-                }
-                return list;
-            }
-            catch
-            {
-                return new List<NewsApiModel.NewsWithPage>();
-            }
-
-        }
-
-        /// <summary>
-        /// 返回所有的新闻类别。
-        /// </summary>
-        [HttpGet("category")]
-        public List<NewsApiModel.CategoryWithoutNews> GetAllCategory()
-        {
-            try
-            {
-                List<NewsCategory> listWithNews = NewsSystemContext.NewsCategories.ToList();
-                List<NewsApiModel.CategoryWithoutNews> listWithoutNews = new List<NewsApiModel.CategoryWithoutNews>();
-                if(listWithNews != null)
-                {
-                    foreach (var category in listWithNews)
-                    {
-                        var item = new NewsApiModel.CategoryWithoutNews();
-                        item.id = category.Id;
-                        item.name = category.Name;
-                        listWithoutNews.Add(item);
-                    }
-                    return listWithoutNews;
-                }
-                else 
-                    return new List<NewsApiModel.CategoryWithoutNews>();
-            }
-            catch
-            {
-                return new List<NewsApiModel.CategoryWithoutNews>();
-            }
-        }
         /// <summary>
         /// 删除指定新闻ID的新闻。
         /// </summary>
-        [HttpDelete("news/{idOfNews}")]
+        [HttpDelete("{idOfNews}")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public IActionResult DeleteNews(int idOfNews)
         {
             try
             {
-                var item = NewsSystemContext.News.FirstOrDefault(news => news.Id == idOfNews);
+                var item = _newsSystemContext.News.FirstOrDefault(news => news.Id == idOfNews);
                 if (item == null)
                     return NotFound("不存在该新闻");
-                NewsSystemContext.Remove(item);
-                NewsSystemContext.SaveChanges();
-                return Ok("");
-            }
-            catch
-            {
-                return BadRequest("未知错误" );
-            }
-        }
-        /// <summary>
-        /// 发布新闻。
-        /// </summary>
-        [HttpPost("News")]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-        public IActionResult ReleaseNews(NewsApiModel.ReleaseModel mdl)
-        {
-            try
-            {
-                if (NewsSystemContext.News.FirstOrDefault(n => n.Id == mdl.Id) != null)
-                    return BadRequest("ID已存在");
-                News news = new News
-                {
-                    Id = mdl.Id,
-                    Title = mdl.Title,
-                    AbstractContent = mdl.AbstractContent,
-                    OringinUrl = mdl.OriginalUrl,
-                    NewsCategory = mdl.Category
-                };
-                var categoryInDbSet = NewsSystemContext.NewsCategories.FirstOrDefault(x => x.Name == mdl.Category.Name);
-                if (categoryInDbSet == null)
-                    return NotFound("不存在该类别");
-                categoryInDbSet.News.Add(news);
-                NewsSystemContext.News.Add(news);
-                NewsSystemContext.SaveChanges();
+                _newsSystemContext.Remove(item);
+                _newsSystemContext.SaveChanges();
                 return Ok("");
             }
             catch
@@ -182,35 +89,126 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
                 return BadRequest("未知错误");
             }
         }
+
+        /// <summary>
+        /// 发布新闻。
+        /// </summary>
+        [HttpPost]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        public ActionResult<News> ReleaseNews(NewsApiModel.ReleaseModel mdl)
+        {
+            // if (_newsSystemContext.News.FirstOrDefault(n => n.Id == mdl.Id) != null)
+            //     return BadRequest("ID已存在");
+            var categoryInDbSet =
+                _newsSystemContext.NewsCategories.FirstOrDefault(x => x.Id == mdl.Category);
+            if (categoryInDbSet == null)
+                return NotFound("不存在该类别");
+            News news = new News
+            {
+                Title = mdl.Title,
+                AbstractContent = mdl.AbstractContent,
+                OringinUrl = mdl.OriginalUrl,
+                NewsCategory = categoryInDbSet
+            };
+            news = _newsSystemContext.News.Add(news).Entity;
+            _newsSystemContext.SaveChanges();
+            news.NewsCategory.News = null;
+            return news;
+        }
+
         /// <summary>
         /// 调整新闻。
         /// </summary>
-        [HttpPut("News")]
+        [HttpPut]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public IActionResult ChangeNews(NewsApiModel.ChangeModel mdl)
         {
             try
             {
-                var news = NewsSystemContext.News.FirstOrDefault(news1 => news1.Id == mdl.Id);
+                var news = _newsSystemContext.News
+                    .Include(x => x.NewsCategory)
+                    .FirstOrDefault(news1 => news1.Id == mdl.Id);
                 if (news == null)
                     return NotFound("不存在该新闻");
                 news.AbstractContent = mdl.Content;
                 news.Title = mdl.Title;
-                if(news.NewsCategory != mdl.Category)
+                if (news.NewsCategory.Id != mdl.Category)
                 {
-                    news.NewsCategory = mdl.Category;
-                    var categoryInDbSet = NewsSystemContext.NewsCategories.FirstOrDefault(x => x.Name == mdl.Category.Name);
+                    var categoryInDbSet =
+                        _newsSystemContext.NewsCategories.FirstOrDefault(x => x.Id == mdl.Category);
                     if (categoryInDbSet == null)
                         return NotFound("不存在该类别");
-                    categoryInDbSet.News.Add(news);
+                    news.NewsCategory = categoryInDbSet;
                 }
-                NewsSystemContext.SaveChanges();
-                return Ok("");
+
+                news = _newsSystemContext.News.Update(news).Entity;
+                _newsSystemContext.SaveChanges();
+
+                news.NewsCategory.News = null;
+                return Ok(news);
             }
             catch
             {
                 return BadRequest("未知错误");
             }
+        }
+
+        /// <summary>
+        /// 根据指定新闻ID查找新闻
+        /// </summary>
+        /// <param name="id">新闻ID</param>
+        /// <returns></returns>
+        [HttpGet("{id}")]
+        public async Task<ActionResult<News>> GetNewsById(int id)
+        {
+            var newsFound = await _newsSystemContext.News
+                .Include(x => x.NewsCategory)
+                .FirstOrDefaultAsync(x => x.Id == id);
+            if (newsFound != null)
+            {
+                // 防止序列化为JSON时无限套娃
+                // 不过这里可以采用建立另一个新实体的办法来解决比较好
+                // 暂时先如此处理把
+                newsFound.NewsCategory.News = null;
+                return newsFound;
+            }
+
+            return NotFound("找不到对应新闻");
+        }
+
+        /// <summary>
+        /// 无分类获取按页获取新闻列表。
+        /// </summary>
+        /// <param name="page">新闻页码</param>
+        /// <param name="size">每页数量</param>
+        /// <returns></returns>
+        [HttpGet("{page}/{size}")]
+        public async Task<ActionResult<IList<News>>> GetNewsList(int page, int size)
+        {
+            var result = await _newsSystemContext.News
+                .Include(x => x.NewsCategory)
+                .Skip((page - 1) * size)
+                .Take(size)
+                .ToListAsync();
+            // 这么写的原因同上
+            result.ForEach(x => x.NewsCategory.News = null);
+            return result;
+        }
+
+        /// <summary>
+        /// 返回指定类别的含页码的新闻列表。
+        /// </summary>
+        [HttpGet("{categoryId}/{page}/{size}")]
+        public async Task<ActionResult<IList<News>>> ListOfNewsWithPages(int categoryId, int page, int size)
+        {
+            var r = await _newsSystemContext.News
+                .Include(x => x.NewsCategory)
+                .Where(x => x.NewsCategory.Id == categoryId)
+                .Skip((page - 1) * size)
+                .Take(size)
+                .ToListAsync();
+            r.ForEach(x => x.NewsCategory.News = null);
+            return r;
         }
     }
 }

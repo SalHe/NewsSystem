@@ -1,73 +1,96 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
+using Whu.BLM.NewsSystem.Client.Exceptions;
+using Whu.BLM.NewsSystem.Server.Domain.VO;
 using Whu.BLM.NewsSystem.Shared.Entity.Content;
 
 namespace Whu.BLM.NewsSystem.Client.Services.Impl
 {
     public class NewsService : INewsService
     {
-        private INewsCategoryService NewsCategoryService { get; }
+        private readonly HttpClient _httpClient;
 
-        public NewsService(INewsCategoryService newsCategoryService)
+        public NewsService(HttpClient httpClient)
         {
-            NewsCategoryService = newsCategoryService;
-
-            // TODO 非测试环境时移除
-            _cachedNewsCategories = NewsCategoryService.GetNewsCategoriesAsync().Result;
+            _httpClient = httpClient;
         }
 
-        private IList<NewsCategory> _cachedNewsCategories;
-
-        private News GenerateNews(int id, int? categoryId = null)
+        public async Task<News> GetNewsById(int id)
         {
-            Random random = new Random();
-            return new News
+            try
             {
-                Id = id,
-                Title = $"News {id}",
-                NewsCategory = _cachedNewsCategories[categoryId ?? random.Next(0, _cachedNewsCategories.Count)],
-                OringinUrl = $"https://www.baidu.com/s?wd=news{id}",
-                AbstractContent = $"Content{id}"
-            };
-        }
+                return await _httpClient.GetFromJsonAsync<News>($"api/news/{id}");
+            }
+            catch (HttpRequestException e)
+            {
+                if (e.StatusCode == HttpStatusCode.NotFound)
+                {
+                    throw new NewsNotFoundException("找不到对应的新闻");
+                }
 
-        public Task<News> GetNewsById(int id)
-        {
-            // TODO 通过新闻ID获取新闻
-            return Task.FromResult(GenerateNews(id));
+                throw;
+            }
         }
 
         public async Task<IList<News>> GetNewsListAsync(int page, int size)
         {
-            // TODO 无分类获取新闻列表
-            var newsCategories = await NewsCategoryService.GetNewsCategoriesAsync();
-            IList<News> news = new List<News>();
-            Random random = new Random();
-            for (int i = 0; i < 10; i++)
-            {
-                news.Add(GenerateNews(i));
-            }
-
-            return news;
+            return await _httpClient.GetFromJsonAsync<IList<News>>($"api/news/{page}/{size}");
         }
 
         public async Task<IList<News>> GetNewsListAsync(int newsCategoryId, int page, int size)
         {
-            // TODO 按分类获取新闻列表
-            IList<News> news = new List<News>();
-            Random random = new Random();
-            for (int i = 0; i < 10; i++)
-            {
-                news.Add(GenerateNews(i, newsCategoryId));
-            }
-
-            return news;
+            return await _httpClient.GetFromJsonAsync<IList<News>>($"api/news/{newsCategoryId}/{page}/{size}");
         }
 
         public Task<IList<News>> SearchNewsAsync(string keyword, int page, int size)
         {
             return GetNewsListAsync(page, size);
+        }
+
+        public async Task<News> AddNews(int categoryId, News news)
+        {
+            var model = new NewsApiModel.ReleaseModel
+            {
+                Category = categoryId,
+                Title = news.Title,
+                AbstractContent = news.AbstractContent,
+                OriginalUrl = news.OringinUrl
+            };
+            var httpResponseMessage = await _httpClient.PostAsJsonAsync("api/news", model);
+            if (!httpResponseMessage.IsSuccessStatusCode)
+            {
+                throw new AddNewsException(await httpResponseMessage.Content.ReadAsStringAsync());
+            }
+
+            return await httpResponseMessage.Content.ReadFromJsonAsync<News>();
+        }
+
+        public async Task<News> UpdateNews(int categoryId, News news)
+        {
+            var model = new NewsApiModel.ChangeModel
+            {
+                Id = news.Id,
+                Title = news.Title,
+                Content = news.AbstractContent,
+                Category = categoryId
+            };
+            var httpResponseMessage = await _httpClient.PutAsJsonAsync("api/news", model);
+            if (!httpResponseMessage.IsSuccessStatusCode)
+            {
+                throw new EditNewsException(await httpResponseMessage.Content.ReadAsStringAsync());
+            }
+
+            return await httpResponseMessage.Content.ReadFromJsonAsync<News>();
+        }
+
+        public async Task DeleteNews(int newsId)
+        {
+            await _httpClient.DeleteAsync($"api/news/{newsId}");
         }
     }
 }

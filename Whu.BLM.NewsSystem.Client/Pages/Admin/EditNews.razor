@@ -3,9 +3,12 @@
 @using Whu.BLM.NewsSystem.Client.Services
 @using Whu.BLM.NewsSystem.Shared.Entity.Content
 @using System.ComponentModel.DataAnnotations
+@using Whu.BLM.NewsSystem.Client.Exceptions
+@using Whu.BLM.NewsSystem.Shared.Entity.Identity
 @inject MessageService _message
 @inject INewsCategoryService _newsCategoryService
 @inject INewsService _newsService
+@inject NavigationManager _navigationManager
 
 <Form Model="@News"
       LabelColSpan="4"
@@ -17,7 +20,7 @@
     <FormItem Label="URL">
         <Input @bind-Value="@context.OriginUrl"/>
     </FormItem>
-    <FormItem Label="类别：">
+    <FormItem Label="类别">
         <Select Mode="default"
                 DataSource="@NewsCategories"
                 LabelName="@nameof(NewsCategory.Name)"
@@ -34,6 +37,9 @@
 </Form>
 
 @code {
+
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationState { get; set; }
 
     [Parameter]
     public int? NewsId { get; set; }
@@ -53,7 +59,6 @@
         public string OriginUrl { get; set; }
 
         [Required(ErrorMessage = "请输入新闻类别")]
-        [Url(ErrorMessage = "请输入一个合法的类别")]
         public int NewsCategory { get; set; }
     }
 
@@ -62,14 +67,20 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (!(await AuthenticationState).User.IsInRole(UserGroup.Admin.ToString()))
+        {
+    // 没有权限访问编辑和添加，所以导航至首页
+            await _message.Error("您无权访问本页面！");
+            _navigationManager.NavigateTo("/");
+        }
         NewsCategories = await _newsCategoryService.GetNewsCategoriesAsync();
     }
 
     protected override async Task OnParametersSetAsync()
     {
-    // TODO 获取新闻信息
         if (NewsId == null)
         {
+    // 认为是新增新闻
             News = new NewsModel()
             {
                 Title = string.Empty,
@@ -80,30 +91,62 @@
         }
         else
         {
-            var news = await _newsService.GetNewsById(NewsId ?? 0);
-            News = new NewsModel()
+    // 编辑指定的新闻
+            try
             {
-                Title = news.Title,
-                OriginUrl = news.OringinUrl,
-                AbstractContent = news.AbstractContent,
-                NewsCategory = news.NewsCategory.Id
-            };
+                var news = await _newsService.GetNewsById((int) NewsId);
+                News = new NewsModel()
+                {
+                    Title = news.Title,
+                    OriginUrl = news.OringinUrl,
+                    AbstractContent = news.AbstractContent,
+                    NewsCategory = news.NewsCategory.Id
+                };
+            }
+            catch (NewsNotFoundException e)
+            {
+                await _message.Error(e.Message);
+                _navigationManager.NavigateTo("/");
+            }
         }
     }
 
-    private Task OnConfirmEditing()
+    private async Task OnConfirmEditing()
     {
         if (NewsId == null)
         {
-    // TODO 接入添加新闻接口
-            _message.Info("您的添加已通过");
+            try
+            {
+                await _newsService.AddNews(News.NewsCategory, new News()
+                {
+                    Title = News.Title,
+                    AbstractContent = News.AbstractContent,
+                    OringinUrl = News.OriginUrl
+                });
+                await _message.Info("您的添加已通过");
+            }
+            catch (AddNewsException e)
+            {
+                await _message.Error($"添加新闻失败：{e.Message}");
+            }
         }
         else
         {
-    // TODO 接入编辑新闻接口
-            _message.Info("您的编辑已通过");
+            try
+            {
+                await _newsService.UpdateNews(News.NewsCategory, new News()
+                {
+                    Id = (int) NewsId,
+                    Title = News.Title,
+                    AbstractContent = News.AbstractContent,
+                });
+                await _message.Info("您的编辑已通过");
+            }
+            catch (AddNewsException e)
+            {
+                await _message.Error($"编辑新闻失败：{e.Message}");
+            }
         }
-        return Task.CompletedTask;
     }
 
 }

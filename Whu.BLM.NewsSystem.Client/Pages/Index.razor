@@ -2,6 +2,7 @@
 @page "/category/{categoryId:int}"
 @inject INewsCategoryService _newsCategoryService
 @inject INewsService _newsService
+@inject MessageService _message
 @using Whu.BLM.NewsSystem.Shared.Entity.Content;
 @using Whu.BLM.NewsSystem.Client.Services
 
@@ -21,9 +22,8 @@
     </Menu>
 </Row>
 
-<AntList DataSource="@News" ItemLayout="@ListItemLayout.Vertical">
+<AntList DataSource="@News" ItemLayout="@ListItemLayout.Vertical" Loading="@IsLoading">
     <ChildContent>
-        <!-- TODO 当不是管理员时，不显示 editAction -->
         <ListItem Actions="@CreateNewsActions(context)">
             <ListItemMeta Description="@context.AbstractContent">
                 <TitleTemplate>
@@ -32,21 +32,66 @@
             </ListItemMeta>
         </ListItem>
     </ChildContent>
+    <LoadMore>
+        @if (!IsLoading && HasMore)
+        {
+            <div class="loadmore-btn-content ">
+                <Button OnClick="OnLoadMore">下一页</Button>
+            </div>
+        }
+    </LoadMore>
 </AntList>
 
+<style>
+        .loadmore-btn-content {
+            text-align: center;
+            margin-top: 12px;
+            height: 32px;
+            line-height: 32px;
+        }
+</style>
+
 @code {
+
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationState { get; set; }
 
     [Parameter]
     public int? CategoryId { get; set; }
 
+    private bool IsLoading { get; set; } = true;
+    private bool HasMore { get; set; } = true;
+
     private IList<NewsCategory> NewsCategories = new List<NewsCategory>();
     private IList<News> News = new List<News>();
 
+    private int _currentPage = 1;
+    private int _pageSize = 10;
+
     private RenderFragment[] CreateNewsActions(News news)
     {
-        RenderFragment editAction = @<a href="/news/edit/@news.Id">编辑</a>;
-        RenderFragment deleteAction = @<Button Type="@ButtonType.Link" Danger>删除</Button>;
-        return new[] {editAction, deleteAction};
+        if (AuthenticationState.Result.User.IsInRole("Admin"))
+        {
+            RenderFragment editAction = @<a href="/news/edit/@news.Id">编辑</a>;
+            var onConfirm = new Func<Task>(async () => { await DeleteNews(news.Id); });
+            RenderFragment deleteAction =
+                @<Popconfirm Placement="@PlacementType.Bottom"
+                             Title="确定删除这条新闻吗？"
+                             OkText="确认"
+                             CancelText="取消"
+                             OnConfirm="onConfirm">
+                    <Button Type="@ButtonType.Link" Danger>删除</Button>
+                </Popconfirm>;
+            return new[] {editAction, deleteAction};
+        }
+        return new RenderFragment[] {};
+    }
+
+    private async Task DeleteNews(int newsId)
+    {
+        await _newsService.DeleteNews(newsId);
+        News.Remove(News.FirstOrDefault(x => x.Id == newsId));
+        await _message.Info("删除成功!");
     }
 
     protected override async Task OnInitializedAsync()
@@ -56,15 +101,29 @@
 
     protected override async Task OnParametersSetAsync()
     {
-    // TODO 按页码加载新闻列表
+        _currentPage = 1;
+        News = await FetchNews();
+    }
+
+    private async Task<IList<News>> FetchNews()
+    {
+        IsLoading = true;
+        IList<News> newsList;
         if (CategoryId == null)
-        {
-            News = await _newsService.GetNewsListAsync(1, 10);
-        }
+            newsList = await _newsService.GetNewsListAsync(_currentPage, _pageSize);
         else
-        {
-            News = await _newsService.GetNewsListAsync(CategoryId ?? 0, 1, 10);
-        }
+            newsList = await _newsService.GetNewsListAsync((int) CategoryId, _currentPage, _pageSize);
+        
+        IsLoading = false;
+        HasMore = newsList.Count == _pageSize;
+        return newsList;
+    }
+
+    private async Task OnLoadMore()
+    {
+        _currentPage++;
+        var news = await FetchNews();
+        news.ForEach(x => News.Add(x));
     }
 
 }

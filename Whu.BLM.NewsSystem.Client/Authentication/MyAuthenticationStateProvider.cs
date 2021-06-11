@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
@@ -34,9 +36,9 @@ namespace Whu.BLM.NewsSystem.Client.Authentication
 
         private static AuthenticationState AuthenticationStateFromJwt(string token)
         {
-            // TODO 将jwt中包含的其他信息取出来
+            var jwtSecurityToken = new JwtSecurityTokenHandler().ReadJwtToken(token);
             return new AuthenticationState(
-                new ClaimsPrincipal(new ClaimsIdentity(new Claim[] {new Claim("user", "?")}, "jwt")));
+                new ClaimsPrincipal(new ClaimsIdentity(jwtSecurityToken.Claims, "jwt")));
         }
 
         public void NotifyLogout()
