@@ -57,27 +57,12 @@ namespace Whu.BLM.NewsSystem.Client.Services.Impl
 
         public async Task<IList<News>> GetNewsListAsync(int page, int size)
         {
-            // TODO 无分类获取新闻列表
-            IList<News> news = new List<News>();
-            for (int i = 0; i < 10; i++)
-            {
-                news.Add(GenerateNews(i));
-            }
-
-            return news;
+            return await _httpClient.GetFromJsonAsync<IList<News>>($"api/news/{page}/{size}");
         }
 
         public async Task<IList<News>> GetNewsListAsync(int newsCategoryId, int page, int size)
         {
-            // TODO 按分类获取新闻列表
-            IList<News> news = new List<News>();
-            Random random = new Random();
-            for (int i = 0; i < 10; i++)
-            {
-                news.Add(GenerateNews(i, newsCategoryId));
-            }
-
-            return news;
+            return await _httpClient.GetFromJsonAsync<IList<News>>($"api/news/{newsCategoryId}/{page}/{size}");
         }
 
         public Task<IList<News>> SearchNewsAsync(string keyword, int page, int size)
