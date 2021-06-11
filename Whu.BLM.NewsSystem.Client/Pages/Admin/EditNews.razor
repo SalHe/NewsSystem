@@ -59,7 +59,6 @@
         public string OriginUrl { get; set; }
 
         [Required(ErrorMessage = "请输入新闻类别")]
-        [Url(ErrorMessage = "请输入一个合法的类别")]
         public int NewsCategory { get; set; }
     }
 
@@ -81,7 +80,7 @@
     {
         if (NewsId == null)
         {
-            // 认为是新增新闻
+    // 认为是新增新闻
             News = new NewsModel()
             {
                 Title = string.Empty,
@@ -92,7 +91,7 @@
         }
         else
         {
-            // 编辑指定的新闻
+    // 编辑指定的新闻
             try
             {
                 var news = await _newsService.GetNewsById((int) NewsId);
@@ -112,19 +111,30 @@
         }
     }
 
-    private Task OnConfirmEditing()
+    private async Task OnConfirmEditing()
     {
         if (NewsId == null)
         {
-    // TODO 接入添加新闻接口
-            _message.Info("您的添加已通过");
+            try
+            {
+                await _newsService.AddNews(News.NewsCategory, new News()
+                {
+                    Title = News.Title,
+                    AbstractContent = News.AbstractContent,
+                    OringinUrl = News.OriginUrl
+                });
+                await _message.Info("您的添加已通过");
+            }
+            catch (AddNewsException e)
+            {
+                await _message.Error($"添加新闻失败：{e.Message}");
+            }
         }
         else
         {
     // TODO 接入编辑新闻接口
-            _message.Info("您的编辑已通过");
+            await _message.Info("您的编辑已通过");
         }
-        return Task.CompletedTask;
     }
 
 }

@@ -12,6 +12,7 @@ namespace Whu.BLM.NewsSystem.Client.Services
         Task<IList<News>> GetNewsListAsync(int page, int size);
         Task<IList<News>> GetNewsListAsync(int newsCategoryId, int page, int size);
         Task<IList<News>> SearchNewsAsync(string keyword, int page, int size);
-        
+        Task<News> AddNews(int categoryId, News news);
+
     }
 }

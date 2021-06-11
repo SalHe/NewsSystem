@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Whu.BLM.NewsSystem.Client.Exceptions;
+using Whu.BLM.NewsSystem.Server.Domain.VO;
 using Whu.BLM.NewsSystem.Shared.Entity.Content;
 
 namespace Whu.BLM.NewsSystem.Client.Services.Impl
@@ -49,6 +50,24 @@ namespace Whu.BLM.NewsSystem.Client.Services.Impl
         public Task<IList<News>> SearchNewsAsync(string keyword, int page, int size)
         {
             return GetNewsListAsync(page, size);
+        }
+
+        public async Task<News> AddNews(int categoryId, News news)
+        {
+            var model = new NewsApiModel.ReleaseModel
+            {
+                Category = categoryId,
+                Title = news.Title,
+                AbstractContent = news.AbstractContent,
+                OriginalUrl = news.OringinUrl
+            };
+            var httpResponseMessage = await _httpClient.PostAsJsonAsync("api/news", model);
+            if (!httpResponseMessage.IsSuccessStatusCode)
+            {
+                throw new AddNewsException(await httpResponseMessage.Content.ReadAsStringAsync());
+            }
+
+            return await httpResponseMessage.Content.ReadFromJsonAsync<News>();
         }
     }
 }
