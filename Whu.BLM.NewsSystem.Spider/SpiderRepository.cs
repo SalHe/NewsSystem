@@ -26,24 +26,17 @@ namespace Whu.BLM.NewsSystem.Spider
             _spiders.Remove(spider);
         }
 
-        public async Task<HomePage> AnalyseUrl(string url)
+        public async Task<ISpider> FindSupportSpiderForHomePage(string url)
         {
             foreach (var spider in _spiders)
             {
-                try
+                if (await spider.CanSupport(url))
                 {
-                    var homePage = await spider.AnalyseUrl(url);
-                    if (homePage != null)
-                        return homePage;
-                }
-                catch (BaseSpiderException e)
-                {
-                    Console.WriteLine(e);
-                    // throw;
+                    return spider;
                 }
             }
 
-            throw new UnsupportedNewsWebException("未找到可以分析此URL的爬虫");
+            return null;
         }
 
         public async Task<IEnumerable<CategoryPage>> AnalyseHomePage(HomePage homePage)

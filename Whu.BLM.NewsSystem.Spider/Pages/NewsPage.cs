@@ -5,5 +5,6 @@
         public string Title { get; set; }
         public string AbstractContent { get; set; }
         public string CoverImageUrl { get; set; }
+        public CategoryPage CategoryPage { get; set; }
     }
 }

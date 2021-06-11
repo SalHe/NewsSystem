@@ -6,6 +6,7 @@ namespace Whu.BLM.NewsSystem.Spider.Adapter
 {
     public interface ISpider
     {
+        Task<bool> CanSupport(string url);
         Task<HomePage> AnalyseUrl(string url);
         Task<IEnumerable<CategoryPage>> AnalyseHomePage(HomePage homePage);
         Task<IEnumerable<NewsPage>> AnalyseCategoryPage(CategoryPage categoryPage);

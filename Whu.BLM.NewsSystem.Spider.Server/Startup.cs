@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -13,6 +14,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Whu.BLM.NewsSystem.Server.Data.Context;
+using Whu.BLM.NewsSystem.Spider.Adapter;
 
 namespace Whu.BLM.NewsSystem.Spider.Server
 {
@@ -38,6 +40,14 @@ namespace Whu.BLM.NewsSystem.Spider.Server
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Whu.BLM.NewsSystem.Spider.Server", Version = "v1" });
             });
+
+            services.AddSingleton(_ =>
+            {
+                var repo = new SpiderRepository();
+                repo.RegisterSpider(new NeteaseSpider(new HttpClient()));
+                return repo;
+            });
+            services.AddSingleton<SpiderScheduler>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
