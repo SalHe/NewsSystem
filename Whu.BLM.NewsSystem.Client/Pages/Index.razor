@@ -2,9 +2,9 @@
 @page "/category/{categoryId:int}"
 @inject INewsCategoryService _newsCategoryService
 @inject INewsService _newsService
+@inject MessageService _message
 @using Whu.BLM.NewsSystem.Shared.Entity.Content;
 @using Whu.BLM.NewsSystem.Client.Services
-@using Whu.BLM.NewsSystem.Client.Services.Impl
 
 
 <Row Align="center">
@@ -50,10 +50,25 @@
         if (AuthenticationState.Result.User.IsInRole("Admin"))
         {
             RenderFragment editAction = @<a href="/news/edit/@news.Id">编辑</a>;
-            RenderFragment deleteAction = @<Button Type="@ButtonType.Link" Danger>删除</Button>;
+            var onConfirm = new Func<Task>(async () => { await DeleteNews(news.Id); });
+            RenderFragment deleteAction =
+                @<Popconfirm Placement="@PlacementType.Bottom"
+                             Title="确定删除这条新闻吗？"
+                             OkText="确认"
+                             CancelText="取消"
+                             OnConfirm="onConfirm">
+                    <Button Type="@ButtonType.Link" Danger>删除</Button>
+                </Popconfirm>;
             return new[] {editAction, deleteAction};
         }
         return new RenderFragment[] {};
+    }
+
+    private async Task DeleteNews(int newsId)
+    {
+        await _newsService.DeleteNews(newsId);
+        News.Remove(News.FirstOrDefault(x => x.Id == newsId));
+        await _message.Info("删除成功!");
     }
 
     protected override async Task OnInitializedAsync()
@@ -70,7 +85,7 @@
         }
         else
         {
-            News = await _newsService.GetNewsListAsync(CategoryId ?? 0, 1, 10);
+            News = await _newsService.GetNewsListAsync((int) CategoryId, 1, 10);
         }
     }
 

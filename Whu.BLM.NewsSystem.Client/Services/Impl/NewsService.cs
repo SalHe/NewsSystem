@@ -87,5 +87,10 @@ namespace Whu.BLM.NewsSystem.Client.Services.Impl
 
             return await httpResponseMessage.Content.ReadFromJsonAsync<News>();
         }
+
+        public async Task DeleteNews(int newsId)
+        {
+            await _httpClient.DeleteAsync($"api/news/{newsId}");
+        }
     }
 }
