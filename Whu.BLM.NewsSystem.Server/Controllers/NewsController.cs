@@ -165,9 +165,17 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<News>> GetNewsById(int id)
         {
-            var newsFound = await _newsSystemContext.News.FirstOrDefaultAsync(x => x.Id == id);
+            var newsFound = await _newsSystemContext.News
+                .Include(x => x.NewsCategory)
+                .FirstOrDefaultAsync(x => x.Id == id);
             if (newsFound != null)
+            {
+                // 防止序列化为JSON时无限套娃
+                // 不过这里可以采用建立另一个新实体的办法来解决比较好
+                // 暂时先如此处理把
+                newsFound.NewsCategory.News = null;
                 return newsFound;
+            }
 
             return NotFound("找不到对应新闻");
         }
@@ -181,7 +189,14 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         [HttpGet("{page}/{size}")]
         public async Task<ActionResult<IList<News>>> GetNewsList(int page, int size)
         {
-            return await _newsSystemContext.News.Skip((page - 1) * size).Take(size).ToListAsync();
+            var result = await _newsSystemContext.News
+                .Include(x => x.NewsCategory)
+                .Skip((page - 1) * size)
+                .Take(size)
+                .ToListAsync();
+            // 这么写的原因同上
+            result.ForEach(x => x.NewsCategory.News = null);
+            return result;
         }
     }
 }
