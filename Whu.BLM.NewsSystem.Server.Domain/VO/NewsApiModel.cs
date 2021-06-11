@@ -31,7 +31,7 @@ namespace Whu.BLM.NewsSystem.Server.Domain.VO
             public int Id { get; set; }
             public string Title { get; set; }
             public string Content { get; set; }
-            public NewsCategory Category { get; set; }
+            public int Category { get; set; }
         }
     }
 }

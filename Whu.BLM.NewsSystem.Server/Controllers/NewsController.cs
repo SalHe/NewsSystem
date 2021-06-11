@@ -125,23 +125,27 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         {
             try
             {
-                var news = _newsSystemContext.News.FirstOrDefault(news1 => news1.Id == mdl.Id);
+                var news = _newsSystemContext.News
+                    .Include(x => x.NewsCategory)
+                    .FirstOrDefault(news1 => news1.Id == mdl.Id);
                 if (news == null)
                     return NotFound("不存在该新闻");
                 news.AbstractContent = mdl.Content;
                 news.Title = mdl.Title;
-                if (news.NewsCategory != mdl.Category)
+                if (news.NewsCategory.Id != mdl.Category)
                 {
-                    news.NewsCategory = mdl.Category;
                     var categoryInDbSet =
-                        _newsSystemContext.NewsCategories.FirstOrDefault(x => x.Name == mdl.Category.Name);
+                        _newsSystemContext.NewsCategories.FirstOrDefault(x => x.Id == mdl.Category);
                     if (categoryInDbSet == null)
                         return NotFound("不存在该类别");
-                    categoryInDbSet.News.Add(news);
+                    news.NewsCategory = categoryInDbSet;
                 }
 
+                news = _newsSystemContext.News.Update(news).Entity;
                 _newsSystemContext.SaveChanges();
-                return Ok("");
+
+                news.NewsCategory.News = null;
+                return Ok(news);
             }
             catch
             {
