@@ -5,12 +5,31 @@ namespace Whu.BLM.NewsSystem.Server.Domain.VO
     public class NewsApiModel
     {
         /// <summary>
-        /// 带有页码的新闻结构体（建立特定新闻与页码的映射关系）。
+        /// 去掉IList<User>的Model
         /// </summary>
-        public struct NewsWithPage
+        public struct NewsWithoutList
         {
-            public News News { get; set; }
-            public int Page { get; set; }
+            public int Id { get; set; }
+
+            /// <summary>
+            /// 新闻标题。
+            /// </summary>
+            public string Title { get; set; }
+
+            /// <summary>
+            /// 摘要内容。
+            /// </summary>
+            public string AbstractContent { get; set; }
+
+            /// <summary>
+            /// 源URL。
+            /// </summary>
+            public string OringinUrl { get; set; }
+
+            /// <summary>
+            /// 类别。
+            /// </summary>
+            public NewsCategory NewsCategory { get; set; }
         }
         public struct CategoryWithoutNews
         {

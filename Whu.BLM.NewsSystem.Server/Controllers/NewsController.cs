@@ -31,40 +31,40 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         /// <summary>
         /// 检索一个新闻中是否存在相应字段。
         /// </summary>
-        private List<News> Search(string searchWord, int numOfPage)
+        private List<News> Search(string searchWord, int numOfPage, int size)
         {
-            var page = _newsSystemContext.News.Where(news => news.Title.Contains(searchWord))
-                .Skip(10 * numOfPage)
-                .Take(10).ToList();
+            var page = _newsSystemContext.News.Include(news => news.NewsCategory).Where(news => news.Title.Contains(searchWord))
+                .Skip(size* (numOfPage-1))
+                .Take(size).ToList();
+            page.ForEach(news => news.NewsCategory.News = null);
             return page;
         }
 
         /// <summary>
         /// 返回特定搜索字段的含页码的新闻列表。
         /// </summary>
-        [HttpGet("search/{searchWord}")]
-        public List<NewsApiModel.NewsWithPage> ListOfNewsWithPages(string searchWord)
+        [HttpGet("search/{searchWord}/{numOfPage}/{size}")]
+        public List<NewsApiModel.NewsWithoutList> ListOfNewsWithPages(string searchWord, int numOfPage, int size)
         {
-            List<NewsApiModel.NewsWithPage> list = new List<NewsApiModel.NewsWithPage>();
+            List<NewsApiModel.NewsWithoutList> list = new List<NewsApiModel.NewsWithoutList>();
             try
             {
-                for (int i = 1; i <= 10; i++)
+                List<News> singleList = Search(searchWord, numOfPage, size);
+                foreach (var n in singleList)
                 {
-                    List<News> singleList = Search(searchWord, i);
-                    foreach (var news in singleList)
-                    {
-                        NewsApiModel.NewsWithPage newsWithPage = new NewsApiModel.NewsWithPage();
-                        newsWithPage.News = news;
-                        newsWithPage.Page = i;
-                        list.Add(newsWithPage);
-                    }
+                    NewsApiModel.NewsWithoutList news = new NewsApiModel.NewsWithoutList();
+                    news.NewsCategory = n.NewsCategory;
+                    news.Id = n.Id;
+                    news.OringinUrl = n.OringinUrl;
+                    news.Title = n.Title;
+                    news.AbstractContent = n.AbstractContent;
+                    list.Add(news);
                 }
-
                 return list;
             }
             catch
             {
-                return new List<NewsApiModel.NewsWithPage>();
+                return new List<NewsApiModel.NewsWithoutList>();
             }
         }
 
