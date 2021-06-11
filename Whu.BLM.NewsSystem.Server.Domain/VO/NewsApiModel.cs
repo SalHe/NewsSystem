@@ -20,7 +20,6 @@ namespace Whu.BLM.NewsSystem.Server.Domain.VO
 
         public class ReleaseModel
         {
-            public int Id { get; set; }
             public string Title { get; set; }
             public string AbstractContent { get; set; }
             public string OriginalUrl { get; set; }
