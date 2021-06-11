@@ -198,5 +198,21 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
             result.ForEach(x => x.NewsCategory.News = null);
             return result;
         }
+        
+        /// <summary>
+        /// 返回指定类别的含页码的新闻列表。
+        /// </summary>
+        [HttpGet("{categoryId}/{page}/{size}")]
+        public async Task<ActionResult<IList<News>>> ListOfNewsWithPages(int categoryId, int page, int size)
+        {
+            var r = await _newsSystemContext.News
+                .Include(x => x.NewsCategory)
+                .Where(x => x.NewsCategory.Id == categoryId)
+                .Skip((page - 1) * size)
+                .Take(size)
+                .ToListAsync();
+            r.ForEach(x => x.NewsCategory.News = null);
+            return r;
+        }
     }
 }
