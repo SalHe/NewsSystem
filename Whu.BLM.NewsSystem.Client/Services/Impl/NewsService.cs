@@ -69,5 +69,23 @@ namespace Whu.BLM.NewsSystem.Client.Services.Impl
 
             return await httpResponseMessage.Content.ReadFromJsonAsync<News>();
         }
+
+        public async Task<News> UpdateNews(int categoryId, News news)
+        {
+            var model = new NewsApiModel.ChangeModel
+            {
+                Id = news.Id,
+                Title = news.Title,
+                Content = news.AbstractContent,
+                Category = categoryId
+            };
+            var httpResponseMessage = await _httpClient.PutAsJsonAsync("api/news", model);
+            if (!httpResponseMessage.IsSuccessStatusCode)
+            {
+                throw new EditNewsException(await httpResponseMessage.Content.ReadAsStringAsync());
+            }
+
+            return await httpResponseMessage.Content.ReadFromJsonAsync<News>();
+        }
     }
 }

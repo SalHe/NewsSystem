@@ -132,8 +132,20 @@
         }
         else
         {
-    // TODO 接入编辑新闻接口
-            await _message.Info("您的编辑已通过");
+            try
+            {
+                await _newsService.UpdateNews(News.NewsCategory, new News()
+                {
+                    Id = (int) NewsId,
+                    Title = News.Title,
+                    AbstractContent = News.AbstractContent,
+                });
+                await _message.Info("您的编辑已通过");
+            }
+            catch (AddNewsException e)
+            {
+                await _message.Error($"编辑新闻失败：{e.Message}");
+            }
         }
     }
 
