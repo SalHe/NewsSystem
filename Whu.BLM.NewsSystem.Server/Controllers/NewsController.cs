@@ -44,27 +44,28 @@ namespace Whu.BLM.NewsSystem.Server.Controllers
         /// 返回特定搜索字段的含页码的新闻列表。
         /// </summary>
         [HttpGet("search/{searchWord}/{numOfPage}/{size}")]
-        public List<NewsApiModel.NewsWithoutList> ListOfNewsWithPages(string searchWord, int numOfPage, int size)
+        public List<News> ListOfNewsWithPages(string searchWord, int numOfPage, int size)
         {
-            List<NewsApiModel.NewsWithoutList> list = new List<NewsApiModel.NewsWithoutList>();
+            // List<NewsApiModel.NewsWithoutList> list = new List<NewsApiModel.NewsWithoutList>();
             try
             {
                 List<News> singleList = Search(searchWord, numOfPage, size);
-                foreach (var n in singleList)
-                {
-                    NewsApiModel.NewsWithoutList news = new NewsApiModel.NewsWithoutList();
-                    news.NewsCategory = n.NewsCategory;
-                    news.Id = n.Id;
-                    news.OringinUrl = n.OringinUrl;
-                    news.Title = n.Title;
-                    news.AbstractContent = n.AbstractContent;
-                    list.Add(news);
-                }
-                return list;
+                // foreach (var n in singleList)
+                // {
+                //     NewsApiModel.NewsWithoutList news = new NewsApiModel.NewsWithoutList();
+                //     news.NewsCategory = n.NewsCategory;
+                //     news.Id = n.Id;
+                //     news.OringinUrl = n.OringinUrl;
+                //     news.Title = n.Title;
+                //     news.AbstractContent = n.AbstractContent;
+                //     list.Add(news);
+                // }
+                // return list;
+                return singleList;
             }
             catch
             {
-                return new List<NewsApiModel.NewsWithoutList>();
+                return null;
             }
         }
 
