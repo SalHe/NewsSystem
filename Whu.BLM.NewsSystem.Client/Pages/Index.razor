@@ -1,7 +1,9 @@
 ﻿@page "/"
 @page "/category/{categoryId:int}"
+@page "/search/{keywords}"
 @inject INewsCategoryService _newsCategoryService
 @inject INewsService _newsService
+@inject NavigationManager _navigationManager
 @inject MessageService _message
 @using Whu.BLM.NewsSystem.Shared.Entity.Content;
 @using Whu.BLM.NewsSystem.Client.Services
@@ -59,6 +61,9 @@
     [Parameter]
     public int? CategoryId { get; set; }
 
+    [Parameter]
+    public string Keywords { get; set; }
+
     private bool IsLoading { get; set; } = true;
     private bool HasMore { get; set; } = true;
 
@@ -109,11 +114,26 @@
     {
         IsLoading = true;
         IList<News> newsList;
-        if (CategoryId == null)
-            newsList = await _newsService.GetNewsListAsync(_currentPage, _pageSize);
+        if (string.IsNullOrEmpty(Keywords))
+        {
+            if (CategoryId == null)
+                newsList = await _newsService.GetNewsListAsync(_currentPage, _pageSize);
+            else
+                newsList = await _newsService.GetNewsListAsync((int) CategoryId, _currentPage, _pageSize);
+        }
         else
-            newsList = await _newsService.GetNewsListAsync((int) CategoryId, _currentPage, _pageSize);
-        
+        {
+            if (string.IsNullOrWhiteSpace(Keywords))
+            {
+                _navigationManager.NavigateTo("/");
+                newsList = new List<News>();
+            }
+            else
+            {
+                newsList = await _newsService.SearchNewsAsync(Keywords, _currentPage, _pageSize);
+            }
+        }
+
         IsLoading = false;
         HasMore = newsList.Count == _pageSize;
         return newsList;

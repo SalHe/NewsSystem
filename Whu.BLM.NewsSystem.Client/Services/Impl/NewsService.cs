@@ -47,9 +47,9 @@ namespace Whu.BLM.NewsSystem.Client.Services.Impl
             return await _httpClient.GetFromJsonAsync<IList<News>>($"api/news/{newsCategoryId}/{page}/{size}");
         }
 
-        public Task<IList<News>> SearchNewsAsync(string keyword, int page, int size)
+        public async Task<IList<News>> SearchNewsAsync(string keyword, int page, int size)
         {
-            return GetNewsListAsync(page, size);
+            return await _httpClient.GetFromJsonAsync<IList<News>>($"api/news/search/{keyword}/{page}/{size}");
         }
 
         public async Task<News> AddNews(int categoryId, News news)

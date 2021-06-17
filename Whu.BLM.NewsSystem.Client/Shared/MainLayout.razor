@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager _navigationManager
 @*<div class="page">
         <div class="sidebar">
             <NavMenu />
@@ -26,11 +27,8 @@
                 </a>
             </AntDesign.Col>
             <AntDesign.Col Span="14">
-                <AntDesign.Input Placeholder="搜索新闻" Size="@InputSize.Large" @bind-Value="QueryText">
-                    <Prefix>
-                        <Icon Type="search" Theme="outline"/>
-                    </Prefix>
-                </AntDesign.Input>
+                <!-- TODO 搜索建议 -->
+                <AutoCompleteSearch Placeholder="搜索新闻" Size="@InputSize.Large" OnSearch="OnSearch" @bind-Value="QueryText"/>
             </AntDesign.Col>
             <AntDesign.Col Span="6">
                 <Menu Mode=MenuMode.Horizontal>
@@ -123,5 +121,10 @@
 
     [CascadingParameter]
     private Task<AuthenticationState> AuthenticationState { get; set; }
+
+    private void OnSearch()
+    {
+        _navigationManager.NavigateTo($"/search/{QueryText}");
+    }
 
 }
