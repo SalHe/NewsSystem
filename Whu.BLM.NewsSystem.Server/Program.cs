@@ -59,13 +59,6 @@ namespace Whu.BLM.NewsSystem.Server
                 {
                     webBuilder.UseStartup<Startup>();
                 })
-                .ConfigureAppConfiguration((hostContext, builder) =>
-                {
-                    if (hostContext.HostingEnvironment.IsDevelopment())
-                    {
-                        builder.AddUserSecrets<Program>();
-                    }
-                })
                 .ConfigureLogging(logging =>
                 {
                     logging.ClearProviders();

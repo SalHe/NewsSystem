@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using Whu.BLM.NewsSystem.Data;
 using Whu.BLM.NewsSystem.Server.Model;
 
 
@@ -45,10 +46,8 @@ namespace Whu.BLM.NewsSystem.Server
             services.AddSingleton(_ => jwtOptions);
             services.AddSingleton<JwtSecurityTokenHandler>();
 
-            services.AddDbContext<NewsSystemContext>(options => options.UseMySql(
-                    Configuration.GetConnectionString("MySqlConnection"),
-                    new MySqlServerVersion("8.0.25")
-                    )
+            services.AddDbContext<NewsSystemContext>(
+                options => options.UseDbConfig(Configuration.GetSection("DbConfig").Get<DbConfig>())
             );
 
             // 添加跨域策略
