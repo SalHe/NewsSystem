@@ -1,0 +1,30 @@
+version: "3.1"
+
+volumes:
+  mysql-data:
+
+services:
+  mysql:
+    image: mysql:8.0.25
+    environment:
+      MYSQL_ROOT_PASSWORD: NEWS_MYSQL
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./db-init:/docker-entrypoint-initdb.d # Mysql自动执行该目录下的SQL文件
+
+  news-server:
+    image: news-server
+    depends_on: 
+      - mysql
+
+  news-client:
+    image: news-client
+    ports: 
+      - 7000:80
+    depends_on:
+      - news-server
+
+  news-spider-server:
+    image: news-spider-server
+    depends_on:
+      - mysql
