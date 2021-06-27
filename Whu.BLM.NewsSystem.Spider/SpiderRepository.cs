@@ -31,7 +31,7 @@ namespace Whu.BLM.NewsSystem.Spider
             foreach (var spider in _spiders)
             {
                 if (await spider.CanSupport(url))
-                {
+                {   
                     return spider;
                 }
             }

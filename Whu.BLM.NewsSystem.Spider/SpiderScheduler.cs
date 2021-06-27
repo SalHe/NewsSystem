@@ -1,11 +1,15 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
 using Whu.BLM.NewsSystem.Server.Data.Context;
+using Whu.BLM.NewsSystem.Shared.Entity.Content;
 using Whu.BLM.NewsSystem.Spider.Adapter;
 using Whu.BLM.NewsSystem.Spider.Pages;
 
@@ -20,6 +24,7 @@ namespace Whu.BLM.NewsSystem.Spider
         }
 
         public SpiderRepository SpiderRepository { get; }
+
         private readonly NewsSystemContext _newsSystemContext;
         private readonly ConcurrentQueue<PageAndSpider> _pageAndSpiders;
 
@@ -61,6 +66,27 @@ namespace Whu.BLM.NewsSystem.Spider
         protected async Task HandleNewsPage(ISpider spider, NewsPage newsPage)
         {
             // TODO 存到数据库
+
+            var category = _newsSystemContext.NewsCategories.FirstOrDefault(x => x.Name.Equals(newsPage.CategoryPage.CategoryName));
+            if (category == null) // 为null，说明没有这个分类，那么添加
+            {
+                category = new NewsCategory { Name = newsPage.CategoryPage.CategoryName };
+                _newsSystemContext.NewsCategories.Add(category);
+                _newsSystemContext.SaveChanges();
+            }
+
+
+
+            var targetCategory = _newsSystemContext.NewsCategories.FirstOrDefault(x => x.Name.Equals(newsPage.CategoryPage.CategoryName));
+            var news = new News()
+            {
+                Title = newsPage.Title,
+                OringinUrl = newsPage.Url,
+                AbstractContent = newsPage.AbstractContent,
+                NewsCategory = targetCategory, // 给新闻指定对应的类别
+            };
+            _newsSystemContext.News.Add(news);
+            _newsSystemContext.SaveChanges();
             Console.WriteLine($"【{newsPage.CategoryPage.CategoryName}】{newsPage.Title}, {newsPage.Url}");
         }
 
