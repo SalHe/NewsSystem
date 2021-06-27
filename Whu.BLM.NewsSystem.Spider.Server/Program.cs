@@ -39,13 +39,6 @@ namespace Whu.BLM.NewsSystem.Spider.Server
                 {
                     webBuilder.UseStartup<Startup>();
                 })
-                .ConfigureAppConfiguration((hostContext, builder) =>
-                {
-                    if (hostContext.HostingEnvironment.IsDevelopment())
-                    {
-                        builder.AddUserSecrets<Program>();
-                    }
-                })
                 .ConfigureLogging(logging =>
                 {
                     logging.ClearProviders();

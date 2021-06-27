@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using Whu.BLM.NewsSystem.Data;
 using Whu.BLM.NewsSystem.Server.Data.Context;
 using Whu.BLM.NewsSystem.Spider.Adapter;
 
@@ -30,10 +31,9 @@ namespace Whu.BLM.NewsSystem.Spider.Server
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<NewsSystemContext>(options => options.UseMySql(
-                Configuration.GetConnectionString("MySqlConnection"),
-        new MySqlServerVersion("8.0.25")
-            ));
+            services.AddDbContext<NewsSystemContext>(
+                options => options.UseDbConfig(Configuration.GetSection("DbConfig").Get<DbConfig>())
+            );
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
@@ -47,7 +47,7 @@ namespace Whu.BLM.NewsSystem.Spider.Server
                 repo.RegisterSpider(new NeteaseSpider(new HttpClient()));
                 return repo;
             });
-            services.AddSingleton<SpiderScheduler>();
+            services.AddScoped<SpiderScheduler>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
