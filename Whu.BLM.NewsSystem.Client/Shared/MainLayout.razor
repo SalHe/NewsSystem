@@ -41,7 +41,7 @@
                     <AuthorizeView>
                         <Authorized>
                             <!-- TODO 调整 -->
-                            <MenuItem Key="Add-News" Vis>
+                            <MenuItem Key="Add-News">
                                 @if (AuthenticationState.Result.User.IsInRole("Admin"))
                                 {
                                     <MenuLink Href="/news/add">
