@@ -28,7 +28,9 @@ namespace Whu.BLM.NewsSystem.Client
             
             builder.Services.AddScoped(sp =>
             {
-                string baseUr = builder.Configuration.GetSection("NewsServer")["Url"];
+                string baseUr = builder.HostEnvironment.IsDevelopment()
+                    ? builder.Configuration.GetSection("NewsServer")["Url"]
+                    : builder.HostEnvironment.BaseAddress;
                 return new HttpClient {BaseAddress = new Uri(baseUr)};
             });
             builder.Services.AddScoped<INewsCategoryService, NewsCategoryService>();
