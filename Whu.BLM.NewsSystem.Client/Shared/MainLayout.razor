@@ -40,6 +40,16 @@
                     </MenuItem>
                     <AuthorizeView>
                         <Authorized>
+                            <!-- TODO 调整 -->
+                            <MenuItem Key="Add-News" Vis>
+                                @if (AuthenticationState.Result.User.IsInRole("Admin"))
+                                {
+                                    <MenuLink Href="/news/add">
+                                        <Icon Type="plus-square" Theme="outline"/>
+                                        发布
+                                    </MenuLink>
+                                }
+                            </MenuItem>
                             <MenuItem Key="Logout">
                                 <MenuLink Href="/logout">
                                     <Icon Type="logout" Theme="outline"/>
